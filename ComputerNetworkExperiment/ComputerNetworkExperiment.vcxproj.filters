@@ -18,5 +18,31 @@
     <ClCompile Include="ComputerNetworkExperiment.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Server.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="HTTPHandler.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SMTPClient.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MessageQueue.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Server.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="HTTPHandler.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SMTPClient.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MessageQueue.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

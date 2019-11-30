@@ -152,6 +152,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ComputerNetworkExperiment.cpp" />
+    <ClCompile Include="HTTPHandler.cpp" />
+    <ClCompile Include="MessageQueue.cpp" />
+    <ClCompile Include="Server.cpp" />
+    <ClCompile Include="SMTPClient.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="HTTPHandler.h" />
+    <ClInclude Include="MessageQueue.h" />
+    <ClInclude Include="Server.h" />
+    <ClInclude Include="SMTPClient.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
