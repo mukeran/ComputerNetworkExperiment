@@ -152,15 +152,23 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ComputerNetworkExperiment.cpp" />
-    <ClCompile Include="HTTPHandler.cpp" />
+    <ClCompile Include="http\handler.cpp" />
+    <ClCompile Include="HTTP\server.cpp" />
+    <ClCompile Include="logger.cpp" />
     <ClCompile Include="MessageQueue.cpp" />
-    <ClCompile Include="Server.cpp" />
+    <ClCompile Include="http\request.cpp" />
+    <ClCompile Include="http\response.cpp" />
+    <ClCompile Include="http\methods.cpp" />
     <ClCompile Include="SMTPClient.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="HTTPHandler.h" />
+    <ClInclude Include="http\handler.h" />
+    <ClInclude Include="HTTP\server.h" />
+    <ClInclude Include="logger.h" />
     <ClInclude Include="MessageQueue.h" />
-    <ClInclude Include="Server.h" />
+    <ClInclude Include="http\request.h" />
+    <ClInclude Include="http\response.h" />
+    <ClInclude Include="http\methods.h" />
     <ClInclude Include="SMTPClient.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

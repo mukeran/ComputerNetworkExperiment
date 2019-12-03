@@ -13,15 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="源文件\HTTP">
+      <UniqueIdentifier>{3ba87d7f-8636-4555-b134-d6b84bb018b3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ComputerNetworkExperiment.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Server.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="HTTPHandler.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="SMTPClient.cpp">
@@ -30,18 +27,48 @@
     <ClCompile Include="MessageQueue.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="HTTP\server.cpp">
+      <Filter>源文件\HTTP</Filter>
+    </ClCompile>
+    <ClCompile Include="http\request.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="logger.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="http\response.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="http\handler.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="http\methods.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Server.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="HTTPHandler.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="SMTPClient.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="MessageQueue.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="HTTP\server.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="http\request.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="logger.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="http\response.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="http\handler.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="http\methods.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
