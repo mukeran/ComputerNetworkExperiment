@@ -30,6 +30,12 @@
     <ClCompile Include="MessageQueue.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="file_system\FileSystem.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="file_system\Mail.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Server.h">
@@ -42,6 +48,15 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="MessageQueue.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="file_system\Mail.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="file_system\Base64Encoder.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="file_system\FileSystem.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
