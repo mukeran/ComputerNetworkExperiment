@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>webmail</title>
+    <style>
+.box
+{
+    position:relative;
+    top:100px;
+    width:1000px;
+    height:450px;
+    border-radius: 5px 5px 5px 5px;
+    border-color:cornflowerblue;
+    box-shadow: 0 0 10px rgba(121, 183, 245, 0.6);
+	box-sizing: border-box;
+}
+#sender
+{
+    position:absolute;
+    top:10%;
+    right:10%;
+}
+#addressee
+{
+    position:absolute;
+    top:20%;
+    right:10%;
+}
+#title
+{
+    position:absolute;
+    top:30%;
+    right:10%;
+    
+}
+#content
+{
+    position:absolute;
+    top:40%;
+    right:10%;
+    
+}
+.inputtext
+{
+    width:800px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.6);
+    border-color:darkgrey;
+}
+textarea
+{
+    height:200px;
+    width:800px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.6);
+    border-color:darkgrey;
+}
+.btn
+{
+    position:absolute;
+    bottom:5%;
+    right:10%;
+}
+
+#mainbody
+{
+    position:relative;
+    top:-190px;
+}
+
+    
+    </style>
+</head>
+<body>
+<center>
+    <div class="box">
+        <form action="" method="post" enctype="application/x-www-form-urlencoded">
+           
+            <div class="form-group">
+               <div class="input-group" id="sender">
+                    <label  class="control-label">发件人：</label>
+                    <input id="senderinput" class="inputtext" type="text" name="sender" onblur="checksender(this.id)">
+                </div>
+                <div class="input-group" id="addressee">
+                    <label  class="control-label">收件人：</label>
+                    <input id="addresseeinput" class="inputtext" type="text" name="addressee" onblur="checkaddressee(this.id)">
+                </div>
+                <div class="input-group" id="title">
+                    <label class="control-label">主题：</label>
+                    <input class="inputtext" type="text" name="title">
+                </div>
+                <div class="input-group" id="content">
+                    <label class="control-label" id="mainbody">正文：</label>
+                    <textarea type="text" name="content"></textarea>
+                </div>
+                <input class="btn" type="submit" name="submit" value="发送">
+            </div>
+        </form>
+        
+    </div>
+</center> 
+ <script type="text/javascript">
+function checkaddressee(addresseeinput)
+{
+    var re =/^[0-9a-z][a-z0-9\._-]{1,}@[a-z0-9-]{1,}[a-z0-9](\.[a-z]{1,})+$/;  
+    var number = document.getElementById(addresseeinput).value;
+    
+   if ((!re.test(number))||(!number))
+  {
+    alert("请输入正确格式的邮件地址");
+    document.getElementById(addresseeinput).value = "";
+   
+    return false;
+   }
+}
+function checksender(senderinput)
+{
+    var re =/^[0-9a-z][a-z0-9\._-]{1,}@[a-z0-9-]{1,}[a-z0-9](\.[a-z]{1,})+$/;  
+    var number = document.getElementById(senderinput).value;
+    
+   if ((!re.test(number))||(!number))
+  {
+    alert("请输入正确格式的邮件地址");
+    document.getElementById(senderinput).value = "";
+    return false;
+   }
+}   
+</script> 
+   
+    
+</body>
+</html>
