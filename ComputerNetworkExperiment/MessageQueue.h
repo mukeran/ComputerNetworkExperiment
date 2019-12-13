@@ -7,50 +7,51 @@
 #include <thread>
 #include <utility>
 #include <vector>
+#include <functional>
 
-namespace MQ {
-	template <typename T>
-	class Queue {
-	private:
-		std::queue<T> queue;
-		std::mutex m;
-	public:
-		Queue() {}
+
+template <typename T>
+class Queue {
+private:
+	std::queue<T> queue;
+	std::mutex m;
+public:
+	Queue() {}
 		
-		~Queue() {}
+	~Queue() {}
 		
-		bool empty()
-		{
-			std::unique_lock<std::mutex> lock(m);
-			return queue.empty();
-		}
+	bool empty()
+	{
+		std::unique_lock<std::mutex> lock(m);
+		return queue.empty();
+	}
 
-		int size()
-		{
-			std::unique_lock<std::mutex> lock(m);
-			return queue.size();
-		}
+	int size()
+	{
+		std::unique_lock<std::mutex> lock(m);
+		return queue.size();
+	}
 		
-		void enqueue(T& t)
-		{
-			std::unique_lock<std::mutex> lock(m);
-			queue.push(t);
-		}
+	void enqueue(T& t)
+	{
+		std::unique_lock<std::mutex> lock(m);
+		queue.push(t);
+	}
 
-		bool dequeue(T& t)
+	bool dequeue(T& t)
+	{
+		std::unique_lock<std::mutex> lock(m);
+		if (queue.empty())
 		{
-			std::unique_lock<std::mutex> lock(m);
-			if (queue.empty())
-			{
-				return false;
-			}
-			t = std::move(queue.front());
-			queue.pop();
-			return true;
+			return false;
 		}
+		t = std::move(queue.front());
+		queue.pop();
+		return true;
+	}
 
-	};
-}
+};
+
 
 class MessageQueue
 {
@@ -66,7 +67,7 @@ private:
 		{
 			std::function<void()> func;
 			bool dequeued;
-			while (!mq->shutdown)
+			while (!mq->_shutdown)
 			{
 				std::unique_lock<std::mutex> lock(mq->condititonal_mutex);
 				if (mq->queue.empty())
@@ -82,13 +83,13 @@ private:
 		}
 	};
 
-	bool shutdown;
-	MQ::Queue<std::function<void()>> queue;
+	bool _shutdown;
+	Queue<std::function<void()>> queue;
 	std::vector<std::thread> threads;
 	std::mutex condititonal_mutex;
 	std::condition_variable cv;
 public:
-	MessageQueue(const int n) : threads(std::vector<std::thread>(n)), shutdown(false) {}
+	MessageQueue(const int n) : threads(std::vector<std::thread>(n)), _shutdown(false) {}
 	
 	MessageQueue(const MessageQueue&) = delete; // not allowed to use
 	MessageQueue(MessageQueue&&) = delete;
@@ -108,7 +109,7 @@ public:
 	// Waits until threads finish their current task and shutdowns the pool
 	void shutdown()
 	{
-		shutdown = true;
+		_shutdown = true;
 		cv.notify_all();
 
 		int size = threads.size();
@@ -122,7 +123,8 @@ public:
 	}
 
 	template<typename F, typename...Args>
-	auto submitFunc(F&& f, Args&&... args) -> std::future<decltype(f(args...))> {
+	auto submitFunc(F&& f, Args&&... args) -> std::future<decltype(f(args...))> 
+	{
 		std::function<decltype(f(args...))()> func = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
 		auto task_ptr = std::make_shared<std::packaged_task<decltype(f(args...))()>>(func);
 		std::function<void()> wrapper_func = [task_ptr]()
@@ -134,5 +136,12 @@ public:
 		cv.notify_one();
 		return task_ptr->get_future();
 	}
+
+	std::future<bool> SendMail(SMTPClient client, Mail mail);
+
 };
 
+std::future<bool> MessageQueue::SendMail(SMTPClient client, Mail mail)
+{
+	return submitFunc(std::bind(&SMTPClient::SendMail, &client, mail));
+}
