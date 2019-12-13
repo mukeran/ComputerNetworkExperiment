@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 #include <functional>
-
+#include "SMTPClient.h"
 
 template <typename T>
 class Queue {
@@ -144,4 +144,10 @@ public:
 std::future<bool> MessageQueue::SendMail(SMTPClient client, Mail mail)
 {
 	return submitFunc(std::bind(&SMTPClient::SendMail, &client, mail));
+}
+
+template<typename R>
+bool is_ready(std::future<R> const& f)
+{
+	return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
 }
