@@ -1,5 +1,6 @@
 #include <windows.h>
 #include<iostream>
+#include <string>
 #include <stdio.h>
 #include <WinSock.h>
 #include "SMPTClient.h"
@@ -20,7 +21,7 @@ bool SMTPClient::SendMail(Mail mail)
 
 	strcpy_s(account, mail.mail_from.c_str());
 	strcpy_s(password, mail.password.c_str());
-
+	
 
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;
@@ -44,13 +45,13 @@ bool SMTPClient::SendMail(Mail mail)
 			for (i = i + 1, j = 5; i < len; i++, j++)
 			{
 				smtphost[j] = account[i];
-
+				
 			}
 			break;
 		}
 	}
-
-
+	
+	
 	printf("\n%s\n", smtphost);
 
 	SOCKET sockfd = socket(PF_INET, SOCK_STREAM, 0);
@@ -67,25 +68,33 @@ bool SMTPClient::SendMail(Mail mail)
 		printf("SMTP CONNECT ERROR!");
 		return false;
 	}
-	EHLO(sockfd, buf, pcname);
-	AUTH(sockfd, buf, account, password);
-	MAILFROM(sockfd, buf, account);
-	RCPTTO(sockfd, buf, mail.mail_to.c_str());
-	DATA(sockfd, buf, mail.title.c_str(), mail.content.c_str());
-	QUIT(sockfd, buf);
+	EHLO(sockfd, buf, pcname, mail);
+	AUTH(sockfd, buf, account, password,mail);
+	MAILFROM(sockfd, buf, account, mail);
+	RCPTTO(sockfd, buf, mail.mail_to.c_str(), mail);
+	DATA(sockfd, buf, mail.title.c_str(), mail.content.c_str(), mail);
+	QUIT(sockfd, buf, mail);
 	closesocket(sockfd);
 	return true;
 };
-void SMTPClient::EHLO(SOCKET sockfd, char*buf, char* pcname)
+
+
+void SMTPClient::EHLO(SOCKET sockfd, char*buf, char* pcname,Mail mail)
 {
 	DWORD size = 128;
 
 	sprintf_s(buf, SMTP_BUFSIZE, "EHLO  911AIR\r\n");
 	send(sockfd, buf, strlen(buf), 0);
 	recv(sockfd, buf, SMTP_BUFSIZE, 0);
-	//printf("%s\n", buf);
+
+	string tmp(buf, 3);
+	cout << tmp;
+
+	mail.statuscode += tmp;
+	mail.statuscode += '\r\n';
+
 }
-void SMTPClient::AUTH(SOCKET sockfd, char* buf, char* account, char* password)
+void SMTPClient::AUTH(SOCKET sockfd, char* buf, char* account, char* password, Mail mail)
 {
 	char account_buf[128] = { 0 };
 	char password_buf[128]{ 0 };
@@ -104,22 +113,39 @@ void SMTPClient::AUTH(SOCKET sockfd, char* buf, char* account, char* password)
 	send(sockfd, buf, strlen(buf), 0);
 	recv(sockfd, buf, SMTP_BUFSIZE, 0);
 	//printf("%s\n", buf);
+	string tmp(buf, 3);
+	cout << tmp;
+
+	mail.statuscode += tmp;
+	mail.statuscode += '\r\n';
 }
-void SMTPClient::MAILFROM(SOCKET sockfd, char* buf, char* mail_from)
+void SMTPClient::MAILFROM(SOCKET sockfd, char* buf, char* mail_from, Mail mail)
 {
 	sprintf_s(buf, SMTP_BUFSIZE, "MAIL FROM:<%s>\r\n", mail_from);
 	send(sockfd, buf, strlen(buf), 0);
 	recv(sockfd, buf, SMTP_BUFSIZE, 0);
 	//printf("%s", buf);
+
+	string tmp(buf, 3);
+	cout << tmp;
+
+	mail.statuscode += tmp;
+	mail.statuscode += '\r\n';
 }
-void SMTPClient::RCPTTO(SOCKET sockfd, char* buf, const char* mail_to)
+void SMTPClient::RCPTTO(SOCKET sockfd, char* buf, const char* mail_to, Mail mail)
 {
 	sprintf_s(buf, SMTP_BUFSIZE, "RCPT TO:<%s>\r\n", mail_to);
 	send(sockfd, buf, strlen(buf), 0);
 	recv(sockfd, buf, SMTP_BUFSIZE, 0);
 	//printf("%s", buf);
+
+	string tmp(buf, 3);
+	cout << tmp;
+
+	mail.statuscode += tmp;
+	mail.statuscode += '\r\n';
 }
-void SMTPClient::DATA(SOCKET sockfd, char* buf, const char* title, const char* content)//发送文件标题和内容
+void SMTPClient::DATA(SOCKET sockfd, char* buf, const char* title, const char* content, Mail mail)//发送文件标题和内容
 {
 
 	sprintf_s(buf, SMTP_BUFSIZE, "data\r\n");
@@ -137,13 +163,25 @@ void SMTPClient::DATA(SOCKET sockfd, char* buf, const char* title, const char* c
 	send(sockfd, buf, strlen(buf), 0);
 	recv(sockfd, buf, SMTP_BUFSIZE, 0);
 
+	string tmp(buf, 3);
+	cout << tmp;
+
+	mail.statuscode += tmp;
+	mail.statuscode += '\r\n';
+
 }
-void SMTPClient::QUIT(SOCKET sockfd, char* buf)
+void SMTPClient::QUIT(SOCKET sockfd, char* buf, Mail mail)
 {
 	sprintf_s(buf, SMTP_BUFSIZE, "QUIT\r\n");
 	send(sockfd, buf, strlen(buf), 0);
 	recv(sockfd, buf, SMTP_BUFSIZE, 0);
 	printf("%s", buf);
+
+	string tmp(buf, 3);
+	cout << tmp;
+
+	mail.statuscode += tmp;
+	mail.statuscode += '\n';
 	if (strlen(buf) >= 3)
 	{
 		if (buf[0] == '2' && buf[1] == '5' && buf[2] == '0')
@@ -161,12 +199,13 @@ int main(void)
 	mail.mail_to = std::string("969929268@qq.com");
 	mail.title = std::string("Hello");
 	mail.content = std::string("This is a test mail");
-
+	
 	WSADATA WSAData;
 	WSAStartup(MAKEWORD(2, 2), &WSAData);
 	SMTPClient test;
 	test.SendMail(mail);
 	WSACleanup();
+	cout << mail.statuscode << endl;
 	return 0;
 }
 
