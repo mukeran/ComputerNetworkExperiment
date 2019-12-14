@@ -1,5 +1,11 @@
+#include <windows.h>
+#include<iostream>
+#include <stdio.h>
+#include <WinSock.h>
+#include "SMPTClient.h"
+#pragma comment(lib,"ws2_32.lib")
 
-#include "SMTPClient.h"
+
 #define SMTP_BUFSIZE 1024
 
 using namespace std;
@@ -8,23 +14,25 @@ bool SMTPClient::SendMail(Mail mail)
 {
 	char buf[SMTP_BUFSIZE] = { 0 };
 	char account[128] = { 0 };
+
 	char password[128] = { 0 };
 	char* pcname = "911AIR";
 
-	strcpy_s(account, mail.mail_from);
-	strcpy_s(password, mail.password);
-	EncodeBase64(mail.mail_from, account);
-	EncodeBase64(mail.password, password);
+	strcpy_s(account, mail.mail_from.c_str());
+	strcpy_s(password, mail.password.c_str());
+
 
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(25);
 
 	char smtphost[128] = { 0 };
-	int len = strlen(mail.mail_from), i = 0, j;
+
+
+	int len = strlen(account), i = 0, j;
 	for (i = 0; i < len; i++)
 	{
-		if (mail.mail_from[i] != '@')
+		if (account[i] != '@')
 			continue;
 		else
 		{
@@ -35,12 +43,15 @@ bool SMTPClient::SendMail(Mail mail)
 			smtphost[4] = '.';
 			for (i = i + 1, j = 5; i < len; i++, j++)
 			{
-				smtphost[j] = mail.mail_from[i];
+				smtphost[j] = account[i];
+
 			}
 			break;
 		}
 	}
-	printf("%s", smtphost);
+
+
+	printf("\n%s\n", smtphost);
 
 	SOCKET sockfd = socket(PF_INET, SOCK_STREAM, 0);
 	hostent* phost = gethostbyname(smtphost);
@@ -56,67 +67,88 @@ bool SMTPClient::SendMail(Mail mail)
 		printf("SMTP CONNECT ERROR!");
 		return false;
 	}
-	Ehlo(sockfd, buf, pcname); printf("1\n");
-
-	Auth(sockfd, buf, account, password); printf("2\n");
-	MailFrom(sockfd, buf, mail.mail_from); printf("3\n");
-	RcptTo(sockfd, buf, mail.mail_to); printf("4\n");
-	Data(sockfd, buf, mail.title, mail.content); printf("5\n");
-	Quit(sockfd, buf); printf("6\n");
-	closesocket(sockfd); printf("7\n");
+	EHLO(sockfd, buf, pcname);
+	AUTH(sockfd, buf, account, password);
+	MAILFROM(sockfd, buf, account);
+	RCPTTO(sockfd, buf, mail.mail_to.c_str());
+	DATA(sockfd, buf, mail.title.c_str(), mail.content.c_str());
+	QUIT(sockfd, buf);
+	closesocket(sockfd);
 	return true;
 };
-void SMTPClient::Ehlo(SOCKET sockfd, char*buf, char* pcname)
+void SMTPClient::EHLO(SOCKET sockfd, char*buf, char* pcname)
 {
 	DWORD size = 128;
 
 	sprintf_s(buf, SMTP_BUFSIZE, "EHLO  911AIR\r\n");
 	send(sockfd, buf, strlen(buf), 0);
 	recv(sockfd, buf, SMTP_BUFSIZE, 0);
+	//printf("%s\n", buf);
 }
-void SMTPClient::Auth(SOCKET sockfd, char*buf, char* account, char* password)
+void SMTPClient::AUTH(SOCKET sockfd, char* buf, char* account, char* password)
 {
+	char account_buf[128] = { 0 };
+	char password_buf[128]{ 0 };
+	EncodeBase64(account, account_buf);
+	EncodeBase64(password, password_buf);
 	sprintf_s(buf, SMTP_BUFSIZE, "AUTH LOGIN\r\n");//auth login
 	send(sockfd, buf, strlen(buf), 0);
 	recv(sockfd, buf, SMTP_BUFSIZE, 0);
-	sprintf_s(buf, SMTP_BUFSIZE, "%s\r\n", account);
-	printf("%s", account);
+	sprintf_s(buf, SMTP_BUFSIZE, "%s\r\n", account_buf);
+	//printf("%s\n", account);
 	send(sockfd, buf, strlen(buf), 0);
 	recv(sockfd, buf, SMTP_BUFSIZE, 0);
-	sprintf_s(buf, SMTP_BUFSIZE, "%s\r\n", password);
+
+	sprintf_s(buf, SMTP_BUFSIZE, "%s\r\n", password_buf);
+	//printf("%s\n", buf);
 	send(sockfd, buf, strlen(buf), 0);
 	recv(sockfd, buf, SMTP_BUFSIZE, 0);
-	printf("%s\n", password);
+	//printf("%s\n", buf);
 }
-void SMTPClient::MailFrom(SOCKET sockfd, char* buf, char* mail_from)
+void SMTPClient::MAILFROM(SOCKET sockfd, char* buf, char* mail_from)
 {
 	sprintf_s(buf, SMTP_BUFSIZE, "MAIL FROM:<%s>\r\n", mail_from);
 	send(sockfd, buf, strlen(buf), 0);
 	recv(sockfd, buf, SMTP_BUFSIZE, 0);
+	//printf("%s", buf);
 }
-void SMTPClient::RcptTo(SOCKET sockfd, char* buf, char* mail_to)
+void SMTPClient::RCPTTO(SOCKET sockfd, char* buf, const char* mail_to)
 {
 	sprintf_s(buf, SMTP_BUFSIZE, "RCPT TO:<%s>\r\n", mail_to);
 	send(sockfd, buf, strlen(buf), 0);
 	recv(sockfd, buf, SMTP_BUFSIZE, 0);
+	//printf("%s", buf);
 }
-void SMTPClient::Data(SOCKET sockfd, char* buf, char* title, char* content)//发送文件标题和内容
+void SMTPClient::DATA(SOCKET sockfd, char* buf, const char* title, const char* content)//发送文件标题和内容
 {
-	sprintf_s(buf, SMTP_BUFSIZE,
-		"Subject:%s\r\n%s\r\n.\r\n", title, content);
+
+	sprintf_s(buf, SMTP_BUFSIZE, "data\r\n");
+	//printf("%s", buf);
 	send(sockfd, buf, strlen(buf), 0);
 	recv(sockfd, buf, SMTP_BUFSIZE, 0);
+	//printf("%s", buf);
+	sprintf_s(buf, SMTP_BUFSIZE, "Subject:%s\r\n", title);
+	send(sockfd, buf, strlen(buf), 0);
+	//printf("%s\n", buf);
+	sprintf_s(buf, SMTP_BUFSIZE, "\r\n%s\r\n", content);
+	send(sockfd, buf, strlen(buf), 0);
+	//printf("%s\n", buf);
+	sprintf_s(buf, SMTP_BUFSIZE, "\r\n.\r\n");
+	send(sockfd, buf, strlen(buf), 0);
+	recv(sockfd, buf, SMTP_BUFSIZE, 0);
+
 }
-void SMTPClient::Quit(SOCKET sockfd, char* buf)
+void SMTPClient::QUIT(SOCKET sockfd, char* buf)
 {
 	sprintf_s(buf, SMTP_BUFSIZE, "QUIT\r\n");
 	send(sockfd, buf, strlen(buf), 0);
 	recv(sockfd, buf, SMTP_BUFSIZE, 0);
+	printf("%s", buf);
 	if (strlen(buf) >= 3)
 	{
 		if (buf[0] == '2' && buf[1] == '5' && buf[2] == '0')
 		{
-			printf("sucess\n");
+			printf("success\n");
 		}
 	}
 }
@@ -124,11 +156,12 @@ void SMTPClient::Quit(SOCKET sockfd, char* buf)
 int main(void)
 {
 	Mail mail;
-	mail.mail_from = "969929268@qq.com";
-	mail.password = "uewhidelybmvbcgj";
-	mail.mail_to = "969929268@qq.com";
-	mail.title = "Hello";
-	mail.content = "This is a test mail";
+	mail.mail_from = std::string("969929268@qq.com");
+	mail.password = std::string("uewhidelybmvbcgj");
+	mail.mail_to = std::string("969929268@qq.com");
+	mail.title = std::string("Hello");
+	mail.content = std::string("This is a test mail");
+
 	WSADATA WSAData;
 	WSAStartup(MAKEWORD(2, 2), &WSAData);
 	SMTPClient test;
