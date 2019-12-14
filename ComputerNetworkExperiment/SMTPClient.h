@@ -17,16 +17,16 @@ class SMTPClient
 {
 private:
 	SOCKET sockfd;
-
+	
 	struct sockaddr_in addr;
 public:
 	bool SendMail(Mail mail);
-	void EHLO(SOCKET sockfd, char* buf, char* pcname);
-	void AUTH(SOCKET sockfd, char* buf, char* account, char* password);
-	void MAILFROM(SOCKET sockfd, char* buf, char* mail_from);
-	void RCPTTO(SOCKET sockfd, char* buf, const char* mail_to);
-	void DATA(SOCKET sockfd, char* buf, const char*title, const char* content);
-	void QUIT(SOCKET sockfd, char* buf);
+	void EHLO(SOCKET sockfd,char* buf,char* pcname, Mail mail);
+	void AUTH(SOCKET sockfd,char* buf, char* account, char* password, Mail mail);
+	void MAILFROM(SOCKET sockfd, char* buf,char* mail_from, Mail mail);
+	void RCPTTO(SOCKET sockfd,char* buf, const char* mail_to, Mail mail);
+	void DATA(SOCKET sockfd, char* buf, const char*title, const char* content, Mail mail);
+	void QUIT(SOCKET sockfd, char* buf, Mail mail);
 };
 
 void EncodeBase64(const char* src, char* encode)
