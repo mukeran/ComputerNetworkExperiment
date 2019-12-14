@@ -1,17 +1,16 @@
 #pragma once
-#include <Windows.h>
-#include <iostream>
-#include <stdio.h>
-#include <WinSock.h>
-#pragma comment(lib,"ws2_32.lib")
+
+using std::string;
+
+
 struct Mail
 {
-	char* mail_from;
-	char* password;
-	char* mail_to;
-	char* title;
-	char* content;
-
+	string mail_from;
+	string password;
+	string mail_to;
+	string title;
+	string content;
+	string statuscode;
 };
 
 class SMTPClient
@@ -22,15 +21,15 @@ private:
 	struct sockaddr_in addr;
 public:
 	bool SendMail(Mail mail);
-	void Ehlo(SOCKET sockfd, char* buf, char* pcname);
-	void Auth(SOCKET sockfd, char* buf, char* account, char* password);
-	void MailFrom(SOCKET sockfd, char* buf, char* mail_from);
-	void RcptTo(SOCKET sockfd, char* buf, char* mail_to);
-	void Data(SOCKET sockfd, char* buf, char*title, char* content);
-	void Quit(SOCKET sockfd, char* buf);
+	void EHLO(SOCKET sockfd, char* buf, char* pcname);
+	void AUTH(SOCKET sockfd, char* buf, char* account, char* password);
+	void MAILFROM(SOCKET sockfd, char* buf, char* mail_from);
+	void RCPTTO(SOCKET sockfd, char* buf, const char* mail_to);
+	void DATA(SOCKET sockfd, char* buf, const char*title, const char* content);
+	void QUIT(SOCKET sockfd, char* buf);
 };
 
-void EncodeBase64(char* src, char* encode)
+void EncodeBase64(const char* src, char* encode)
 {
 	char base64_table[] = {
 		'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
@@ -67,4 +66,3 @@ void EncodeBase64(char* src, char* encode)
 		encode[4 * i + 4] = 0;
 	}
 }
-
