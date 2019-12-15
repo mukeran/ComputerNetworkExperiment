@@ -45,6 +45,15 @@
     <ClCompile Include="http\methods.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="file_system\FileSystem.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="file_system\Mail.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="http\template_loader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SMTPClient.h">
@@ -71,5 +80,20 @@
     <ClInclude Include="http\methods.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="file_system\Base64Encoder.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="file_system\FileSystem.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="file_system\Mail.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="http\template_loader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="templates\index.html" />
   </ItemGroup>
 </Project>
