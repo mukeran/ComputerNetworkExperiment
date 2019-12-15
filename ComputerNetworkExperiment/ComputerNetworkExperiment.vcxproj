@@ -153,6 +153,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ComputerNetworkExperiment.cpp" />
+    <ClCompile Include="file_system\FileSystem.cpp" />
+    <ClCompile Include="file_system\Mail.cpp" />
     <ClCompile Include="http\handler.cpp" />
     <ClCompile Include="HTTP\server.cpp" />
     <ClCompile Include="logger.cpp" />
@@ -161,8 +163,12 @@
     <ClCompile Include="http\response.cpp" />
     <ClCompile Include="http\methods.cpp" />
     <ClCompile Include="SMTPClient.cpp" />
+    <ClCompile Include="http\template_loader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="file_system\Base64Encoder.h" />
+    <ClInclude Include="file_system\FileSystem.h" />
+    <ClInclude Include="file_system\Mail.h" />
     <ClInclude Include="http\handler.h" />
     <ClInclude Include="HTTP\server.h" />
     <ClInclude Include="logger.h" />
@@ -171,6 +177,10 @@
     <ClInclude Include="http\response.h" />
     <ClInclude Include="http\methods.h" />
     <ClInclude Include="SMTPClient.h" />
+    <ClInclude Include="http\template_loader.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="templates\index.html" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
