@@ -1,4 +1,5 @@
 #include "server.h"
+#include "../handler.h"
 
 namespace http
 {

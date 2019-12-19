@@ -152,32 +152,35 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="smtp\session.cpp" />
+    <ClCompile Include="smtp\auth.cpp" />
     <ClCompile Include="ComputerNetworkExperiment.cpp" />
-    <ClCompile Include="file_system\FileSystem.cpp" />
-    <ClCompile Include="file_system\Mail.cpp" />
-    <ClCompile Include="http\handler.cpp" />
+    <ClCompile Include="file_system.cpp" />
+    <ClCompile Include="handler.cpp" />
     <ClCompile Include="HTTP\server.cpp" />
     <ClCompile Include="logger.cpp" />
-    <ClCompile Include="MessageQueue.cpp" />
     <ClCompile Include="http\request.cpp" />
     <ClCompile Include="http\response.cpp" />
     <ClCompile Include="http\methods.cpp" />
-    <ClCompile Include="SMTPClient.cpp" />
-    <ClCompile Include="http\template_loader.cpp" />
+    <ClCompile Include="smtp\client.cpp" />
+    <ClCompile Include="template_loader.cpp" />
+    <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="file_system\Base64Encoder.h" />
-    <ClInclude Include="file_system\FileSystem.h" />
-    <ClInclude Include="file_system\Mail.h" />
-    <ClInclude Include="http\handler.h" />
+    <ClInclude Include="smtp\session.h" />
+    <ClInclude Include="smtp\auth.h" />
+    <ClInclude Include="file_system.h" />
+    <ClInclude Include="handler.h" />
     <ClInclude Include="HTTP\server.h" />
     <ClInclude Include="logger.h" />
-    <ClInclude Include="MessageQueue.h" />
+    <ClInclude Include="mail.h" />
+    <ClInclude Include="message_queue.h" />
     <ClInclude Include="http\request.h" />
     <ClInclude Include="http\response.h" />
     <ClInclude Include="http\methods.h" />
-    <ClInclude Include="SMTPClient.h" />
-    <ClInclude Include="http\template_loader.h" />
+    <ClInclude Include="smtp\client.h" />
+    <ClInclude Include="template_loader.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="templates\index.html" />
