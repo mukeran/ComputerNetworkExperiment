@@ -21,12 +21,6 @@
     <ClCompile Include="ComputerNetworkExperiment.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="SMTPClient.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="MessageQueue.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="HTTP\server.cpp">
       <Filter>源文件\HTTP</Filter>
     </ClCompile>
@@ -39,29 +33,32 @@
     <ClCompile Include="http\response.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="http\handler.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="http\methods.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="file_system\FileSystem.cpp">
+    <ClCompile Include="utils.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="file_system\Mail.cpp">
+    <ClCompile Include="file_system.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="http\template_loader.cpp">
+    <ClCompile Include="template_loader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="handler.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="smtp\client.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="smtp\auth.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="smtp\session.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SMTPClient.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="MessageQueue.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="HTTP\server.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -74,22 +71,34 @@
     <ClInclude Include="http\response.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="http\handler.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="http\methods.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="file_system\Base64Encoder.h">
+    <ClInclude Include="utils.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="file_system\FileSystem.h">
+    <ClInclude Include="message_queue.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="file_system\Mail.h">
+    <ClInclude Include="mail.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="http\template_loader.h">
+    <ClInclude Include="file_system.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="template_loader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="handler.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="smtp\client.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="smtp\auth.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="smtp\session.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -11,11 +11,8 @@ using std::ifstream;
 using std::ios;
 using std::regex;
 
-namespace http
+class template_loader
 {
-	class template_loader
-	{
-	public:
-		static string render(const string& name, const map<string, string>& args);
-	};
-}
+public:
+	static string render(const string& name, const map<string, string>& args);
+};

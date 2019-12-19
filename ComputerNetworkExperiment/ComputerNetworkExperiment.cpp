@@ -20,7 +20,8 @@
 // 	const int res = a * b;
 // 	std::cout << a << " * " << b << " = " << res << std::endl;
 // }
-#include "http/template_loader.h"
+#pragma comment(lib, "ws2_32.lib")
+#include "template_loader.h"
 #include <iostream>
 #include <map>
 using std::map;
@@ -28,5 +29,5 @@ using std::cout;
 
 int main()
 {
-	cout << http::template_loader::render("index", map<string, string>{{"test", "Hello world"}});
+	cout << template_loader::render("index", map<string, string>{{"test", "Hello world"}});
 }
