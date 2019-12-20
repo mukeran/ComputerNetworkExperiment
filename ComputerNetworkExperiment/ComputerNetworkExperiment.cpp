@@ -1,9 +1,14 @@
-﻿#pragma comment(lib, "ws2_32.lib")
+﻿#include "http/server.h"
 #include "smtp/client.h"
 #include "file_system.h"
+#include "message_queue.h"
+#include "logger.h"
 #include <iostream>
+#pragma comment(lib, "ws2_32.lib")
 using std::cout;
 using std::endl;
+
+constexpr auto max_message_queue_thread = 2;
 
 void init_socket()
 {
@@ -11,24 +16,31 @@ void init_socket()
 	WSAStartup(MAKEWORD(2, 2), &wsa_data);
 }
 
-int main()
+file_system* file_system::instance;
+message_queue* message_queue::instance;
+smtp::client* smtp::client::instance;
+
+int main(const int argc, const char* argv[])
 {
-	const file_system fs;
-	const auto list = fs.get_mail_list();
-	for (auto it = list.cbegin(); it != list.cend(); ++it)
+	if (argc != 3)
 	{
-		cout << it->uuid << " " << it->from << " " << it->to << " " << it->subject << " " << it->content << endl;
-		for (auto it2 = it->log.cbegin(); it2 != it->log.cend(); ++it2)
-			cout << *it2 << endl;
-		cout << it->created_time << " " << it->sent_time << endl;
+		cout << "Invalid parameters. Please type the command in following format:" << endl;
+		cout << "ComputerNetworkExperiment.exe <ip> <port>" << endl;
+		cout << "Notice: <ip> means the SMTP server of the sender email account; <port> means its SMTP port." << endl;
+		return 1;
 	}
-	/*auto m = mail( "mukeran<mukeran1000@qq.com>", "mukeran<mukeran@mukeran.com>", "test", "test");
-	m.append_log("");
-	m.append_log("dv");
-	m.append_log("123");
-	m.append_log("asq");
-	m.append_log("e2e");
-	m.append_log("testtehtufjafhaeifbehafbiaefieafuieahufiheaffheufhuaef");
-	m.append_log("dfd");
-	fs.save_mail(&m);*/
+	init_socket();
+	try
+	{
+		smtp::client::instance = new smtp::client(argv[1], std::stoi(argv[2]));
+	}
+	catch (std::exception& e)
+	{
+		logger::error(e.what());
+		return 2;
+	}
+	message_queue::instance = new message_queue(max_message_queue_thread);
+	file_system::instance = new file_system();
+	http::server server("0.0.0.0", 8080);
+	server.start();
 }

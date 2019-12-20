@@ -85,6 +85,7 @@ class message_queue
 	std::mutex conditional_mutex_;
 	std::condition_variable cv_;
 public:
+	static message_queue* instance;
 	explicit message_queue(const int n) : shutdown_(false), threads_(std::vector<std::thread>(n)) {}
 	
 	message_queue(const message_queue&) = delete; // not allowed to use

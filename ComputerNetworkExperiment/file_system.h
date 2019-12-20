@@ -16,7 +16,8 @@ using std::string;
 class file_system
 {
 public:
-	const string storage_path = "..\\mails";
+	const string storage_path = ".\\mails";
+	static file_system* instance;
 	file_system();
 	void save_mail(mail* mail) const;
 	vector<mail> get_mail_list() const;

@@ -18,24 +18,23 @@ namespace smtp
 		this->sa_.sin_family = AF_INET;
 		this->sa_.sin_port = htons(port);
 		inet_pton(AF_INET, address.data(), &(this->sa_.sin_addr));
-		this->buf_ = new char[buffer_size + 1];
 		connect(this->sock_, reinterpret_cast<SOCKADDR*>(&this->sa_), sizeof SOCKADDR);
 		if (this->sock_ == INVALID_SOCKET) {
 			std::cout << WSAGetLastError() << std::endl;
 			throw std::exception("Connection failed");
 		}
+		this->buf_ = new char[buffer_size + 1];
 		this->mail_ = mail;
 		this->auth_ = auth;
 		memset(buf_, 0, sizeof(char) * buffer_size);
 		recv(sock_, buf_, buffer_size, 0);
-		mail_->log.emplace_back(buf_);
+		mail_->append_log(buf_);
 	}
 
 	session::~session()
 	{
 		closesocket(this->sock_);
 	}
-
 	
 	void session::ehlo() const
 	{
