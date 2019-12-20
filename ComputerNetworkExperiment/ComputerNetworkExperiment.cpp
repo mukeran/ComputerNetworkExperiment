@@ -37,6 +37,7 @@ int main(const int argc, const char* argv[])
 		logger::info("Start to initialize components...");
 		smtp::client::instance = new smtp::client(argv[1], std::stoi(argv[2]));
 		message_queue::instance = new message_queue(max_message_queue_thread);
+		message_queue::instance->init();
 		file_system::instance = new file_system();
 		logger::info("Components initialized");
 		logger::info("The SMTP server has been set to " + string(argv[1]) + ":" + string(argv[2]));

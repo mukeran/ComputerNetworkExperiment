@@ -66,7 +66,7 @@ class message_queue
 			while (!mq_->shutdown_)
 			{
 				std::unique_lock<std::mutex> lock(mq_->conditional_mutex_);
-				if (mq_->queue_.empty())
+				while (mq_->queue_.empty())
 				{
 					mq_->cv_.wait(lock);
 				}
@@ -100,6 +100,7 @@ public:
 		for (auto i = 0; i < size; ++i)
 		{
 			threads_[i] = std::thread(worker(this, i));
+			threads_[i].detach();
 		}
 	}
 
@@ -128,15 +129,20 @@ public:
 		{
 			(*task_ptr)();
 		};
+		std::unique_lock<std::mutex> lock(instance->conditional_mutex_);
 		queue_.enqueue(wrapper_func);
 		cv_.notify_one();
 		return task_ptr->get_future();
 	}
 
-	std::future<bool> send_mail(smtp::client client, mail* mail, smtp::auth auth)
+	std::future<bool> send_mail(smtp::client& client, mail mail, const smtp::auth& auth)
 	{
-		logger::info("Mail " + mail->uuid + " is pushing into message queue");
-		return submit_func(std::bind(&smtp::client::send, client, mail, auth));
+		logger::info("Mail " + mail.uuid + " is pushing into message queue");
+		return submit_func([&client, mail, auth]()
+		{
+			auto m = mail;
+			return client.send(&m, auth);
+		});
 	}
 };
 

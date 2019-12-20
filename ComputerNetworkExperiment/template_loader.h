@@ -14,5 +14,6 @@ using std::regex;
 class template_loader
 {
 public:
+	static string render(const string& name);
 	static string render(const string& name, const map<string, string>& args);
 };

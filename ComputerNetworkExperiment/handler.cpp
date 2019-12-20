@@ -8,8 +8,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>
-#include <set>
-using std::set;
+
 void handler::handle(const request& req, response* resp)
 {
 	resp->set_header("Content-Type", "text/html;charset=utf-8");
@@ -17,73 +16,76 @@ void handler::handle(const request& req, response* resp)
 	const auto path = req.get_path();
 	const auto queries = req.get_queries();
 	const auto form_fields = req.get_form_fields();
-
-
-	std::ifstream ofs;
-	char* it;
-	if (path == "/send" and method == "GET")
+	
+	if (path.empty() || path == "/")
 	{
-		std::ifstream ofs("templates/send.html");
-		const auto msg = string(std::istreambuf_iterator<char>(ofs), std::istreambuf_iterator<char>());
+		resp->set_status(http::status_code::found);
+		resp->set_header("Location", "/list");
+	}
+	else if (path == "/send" && method == "get")
+	{
+		const auto msg = template_loader::render("send");
 		resp->set_body(msg);
 		resp->set_status(http::status_code::ok);
 	}
-	else if (path == "/send" and method == "POST")
+	else if (path == "/send" && method == "post")
 	{
-		string from = form_fields.at("from_name") + string("<") + form_fields.at("from_mail") + string(">");
-		string to = form_fields.at("to_name") + string("<") + form_fields.at("to_mail") + string(">");
+		string from = form_fields.at("from_name") + string("<") + form_fields.at("from_email") + string(">");
+		string to = form_fields.at("to_name") + string("<") + form_fields.at("to_email") + string(">");
 		mail m(from, to, form_fields.at("subject"),form_fields.at("content"));
 		file_system::instance->save_mail(&m);
 		string username = form_fields.at("username");
 		string password = form_fields.at("password");
-		auto auth = smtp::auth{ username,password };
-		message_queue::instance->send_mail(*smtp::client::instance, &m, auth);
+		message_queue::instance->send_mail(*smtp::client::instance, m, smtp::auth{ username,password });
 
 		resp->set_status(http::status_code::found);
 		resp->set_header("Location", "/detail/" + m.uuid);
 	}
 	else if (path == "/list")
 	{
-		auto V = file_system::instance->get_mail_list();
-		if (!V.empty())
+		auto mail_list = file_system::instance->get_mail_list();
+		string replace = "mail_list";
+		string list;
+		if (!mail_list.empty())
 		{
-			string replace = "mail_list";
-			string list;
-			for (auto it = V.begin(); it != V.end(); it++)
+			auto compare = [](auto a, auto b) -> bool
 			{
-				mail m = *it;
-				string created_time = asctime(gmtime(&m.created_time));
-				string sent_time = asctime(gmtime(&m.sent_time));
-				//gmtime
+				return a.created_time > b.created_time;
+			};
+			std::sort(mail_list.begin(), mail_list.end(), compare);
+			for (auto it = mail_list.begin(); it != mail_list.end(); ++it)
+			{
+				auto m = *it;
+				auto created_time = get_time_string(m.created_time);
+				auto sent_time = get_time_string(m.sent_time);
 				list += R"(<tr><td>)";
-				list += m.to;
+				list += html_escape_string(m.to);
 				list += R"(</td><td><a href="/detail/)";
 				list += m.uuid;
 				list += R"(">)";
-				list += m.subject;
+				list += html_escape_string(m.subject);
 				list += R"(</a></td><td>)";
 				list += created_time;
 				list += R"(</td><td>)";
 				list += sent_time;
 				list += R"(</td></tr>)";
 			}
-			map<string, string> M = { {replace,list} };
-			string msg = template_loader::render("list", M);
-			resp->set_body(msg);
-			resp->set_status(http::status_code::ok);
 		}
+		map<string, string> M = { {replace,list} };
+		string msg = template_loader::render("list", M);
+		resp->set_body(msg);
+		resp->set_status(http::status_code::ok);
 	}
-	else if (path.compare(0, 6, "/detail", 0, 6))
+	else if (path.compare(0, 7, "/detail") == 0)
 	{
 		string id = path.substr(8);
 		mail m;
 		try {
 			m = file_system::instance->get_mail(id);
 		}
-		catch (std::exception & e)
+		catch (std::exception&)
 		{
-			std::ifstream ofs("templates/detail_not_found.html");
-			const auto msg = string(std::istreambuf_iterator<char>(ofs), std::istreambuf_iterator<char>());
+			const auto msg = template_loader::render("detail_not_found");
 			resp->set_body(msg);
 			resp->set_status(http::status_code::not_found);
 			return;
@@ -92,27 +94,62 @@ void handler::handle(const request& req, response* resp)
 		string msg;
 		for (auto it = log.begin(); it != log.end(); ++it)
 		{
-			msg += *it;
+			msg += html_escape_string(*it);
 			msg += R"(</br>)";
 		}
-		auto get_time = [](time_t t) -> const char* {
-			if (t == 0)
-				return "-";
-			auto tmp = asctime(gmtime(&t));
-			if (tmp == nullptr)
-				return "Error time";
-			return tmp;
+		string created_time = get_time_string(m.created_time);
+		string sent_time = get_time_string(m.sent_time);
+		auto status_to_string = [](const mail_status status) -> string
+		{
+			if (status == mail_status::pending)
+				return "Pending";
+			if (status == mail_status::sending)
+				return "Sending";
+			if (status == mail_status::failed)
+				return "Failed";
+			return "Success";
 		};
-		string created_time = get_time(m.created_time);
-		string sent_time = get_time(m.sent_time);
-		map<string, string> M = { {"from",m.from},{"to",m.to},{"created_time",created_time},{"sent_time",sent_time},{"subject",m.subject},{"content",m.content},{"log",msg} };
-		string msg = template_loader::render("detail", M);
+		map<string, string> M = { {"from",html_escape_string(m.from)},{"to",html_escape_string(m.to)},{"created_time",created_time},{"sent_time",sent_time},{"subject",html_escape_string(m.subject)},{"content",html_escape_string(m.content)},{"log",msg}, {"status", status_to_string(m.status)} };
+		msg = template_loader::render("detail", M);
 		resp->set_body(msg);
 		resp->set_status(http::status_code::ok);
+	}
+	else
+	{
+		resp->set_body("404 Not Found!");
+		resp->set_status(http::status_code::not_found);
 	}
 	if (req.get_header("connection") == "keep-alive")
 		resp->set_header("Connection", "Keep-Alive");
 	else
 		resp->set_header("Connection", "Close");
 
+}
+
+string handler::get_time_string(const time_t& t)
+{
+	if (t == 0)
+		return "-";
+	tm tm;
+	char tmp[64];
+	localtime_s(&tm, &t);
+	strftime(tmp, sizeof(tmp), "%Y-%m-%d %X", &tm);
+	return tmp;
+}
+
+string handler::html_escape_string(const string& data)
+{
+	std::string buffer;
+	buffer.reserve(data.size());
+	for (auto pos = 0u; pos < data.length(); ++pos) {
+		switch (data[pos]) {
+		case '&':  buffer.append("&amp;");       break;
+		case '\"': buffer.append("&quot;");      break;
+		case '\'': buffer.append("&apos;");      break;
+		case '<':  buffer.append("&lt;");        break;
+		case '>':  buffer.append("&gt;");        break;
+		default:   buffer.append(&data[pos], 1); break;
+		}
+	}
+	return buffer;
 }

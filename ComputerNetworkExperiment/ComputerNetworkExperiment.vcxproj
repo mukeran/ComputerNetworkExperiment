@@ -184,7 +184,10 @@
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="templates\index.html" />
+    <None Include="templates\detail.html" />
+    <None Include="templates\detail_not_found.html" />
+    <None Include="templates\list.html" />
+    <None Include="templates\send.html" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
