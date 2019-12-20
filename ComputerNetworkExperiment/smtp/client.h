@@ -17,6 +17,6 @@ namespace smtp
 		u_short port_;
 	public:
 		explicit client(const string& address, const u_short port) : address_(address), port_(port) {}
-		bool send(const mail& mail, const auth& auth) const;
+		bool send(mail* mail, const auth& auth) const;
 	};
 }

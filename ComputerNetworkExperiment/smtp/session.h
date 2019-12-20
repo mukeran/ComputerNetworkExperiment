@@ -12,19 +12,19 @@ namespace smtp
 	{
 		SOCKET sock_;
 		sockaddr_in sa_;
-		mail mail_;
+		mail* mail_;
 		auth auth_;
 		char* buf_;
 		string send(const string& data) const;
 	public:
-		session(const string& address, const u_short port, mail mail, auth auth);
+		session(const string& address, const u_short port, mail* mail, const auth& auth);
 		~session();
-		void ehlo();
-		void auth();
-		void mail_from();
-		void rcpt_to();
-		void data();
-		void quit();
+		void ehlo() const;
+		void auth() const;
+		void mail_from() const;
+		void rcpt_to() const;
+		void data() const;
+		void quit() const;
 	};
 }
 

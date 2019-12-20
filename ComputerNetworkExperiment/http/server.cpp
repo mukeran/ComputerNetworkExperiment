@@ -3,18 +3,14 @@
 
 namespace http
 {
-	server::server(const char* address, const u_short port)
+	server::server(const string& address, const u_short port)
 	{
-		WSADATA wsa_data;
-		WSAStartup(MAKEWORD(2, 2), &wsa_data);
 		this->sock_ = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
 		memset(&this->sa_, 0, sizeof(this->sa_));
 		this->sa_.sin_family = AF_INET;
 		this->sa_.sin_port = htons(port);
-		inet_pton(AF_INET, address, &(this->sa_.sin_addr));
-		const int len = strlen(address);
-		this->address_ = new char[len + 1];
-		memcpy(this->address_, address, sizeof(char) * (len + 1));
+		inet_pton(AF_INET, address.data(), &(this->sa_.sin_addr));
+		this->address_ = address;
 		this->port_ = port;
 		bind(this->sock_, reinterpret_cast<SOCKADDR*>(&this->sa_), sizeof SOCKADDR);
 	}
@@ -47,7 +43,7 @@ namespace http
 		return str;
 	}
 
-	string tolower(string str)
+	string to_lower(string str)
 	{
 		for (auto& c : str) c = std::tolower(c);
 		return str;
@@ -62,9 +58,9 @@ namespace http
 		{
 			throw exception("Invalid HTTP request");
 		}
-		meta.method = tolower(trim(line.substr(0, first_space_pos)));
+		meta.method = to_lower(trim(line.substr(0, first_space_pos)));
 		meta.path = trim(line.substr(first_space_pos + 1, last_space_pos - first_space_pos - 1));
-		meta.version = tolower(trim(line.substr(last_space_pos + 1)));
+		meta.version = to_lower(trim(line.substr(last_space_pos + 1)));
 		return meta;
 	}
 	
@@ -84,8 +80,8 @@ namespace http
 			if (line.length() == 0)
 				continue;
 			const auto colon_pos = line.find_first_of(':');
-			const auto key = tolower(trim(line.substr(0, colon_pos)));
-			const auto value = tolower(trim(line.substr(colon_pos + 1)));
+			const auto key = to_lower(trim(line.substr(0, colon_pos)));
+			const auto value = to_lower(trim(line.substr(colon_pos + 1)));
 			headers[key] = value;
 		}
 		headers["raw"] = data;
@@ -203,7 +199,7 @@ namespace http
 			{
 				req = new request(meta.method, meta.path, meta.version, headers, body);
 			}
-			catch (exception& e)
+			catch (exception&)
 			{
 				send_response(client, response(kv{ {"Connection", "Close"} }, "", status_code::bad_request));
 				break;

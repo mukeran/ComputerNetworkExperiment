@@ -1,33 +1,17 @@
-﻿//#include "http/server.h"
-//
-//int main()
-//{
-//	http::server server("0.0.0.0", 10010);
-//	server.start();
-//}
+﻿#pragma comment(lib, "ws2_32.lib")
+#include "smtp/client.h"
+using smtp::client;
 
-
-// #include "SMTPClient.h"
-// #include "MessageQueue.h"
-
-
-// void simulate_hard_computation() {
-// 	std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-// }
-
-// void multiply(const int a, const int b) {
-// 	simulate_hard_computation();
-// 	const int res = a * b;
-// 	std::cout << a << " * " << b << " = " << res << std::endl;
-// }
-#pragma comment(lib, "ws2_32.lib")
-#include "template_loader.h"
-#include <iostream>
-#include <map>
-using std::map;
-using std::cout;
+void init_socket()
+{
+	WSADATA wsa_data;
+	WSAStartup(MAKEWORD(2, 2), &wsa_data);
+}
 
 int main()
 {
-	cout << template_loader::render("index", map<string, string>{{"test", "Hello world"}});
+	init_socket();
+	client c("157.255.174.111", 25);
+	auto m = mail{ "123", "mukeran<mukeran1000@qq.com>", "mukeran<mukeran@mukeran.com>", "test", "test", vector<string>{} };
+	c.send(&m, smtp::auth{ "mukeran1000@qq.com", "couhunarkjvgbaie" });
 }

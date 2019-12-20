@@ -4,7 +4,7 @@ using std::string;
 
 namespace utils
 {
-	string base64_chars =
+	const string base64_chars =
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 		"abcdefghijklmnopqrstuvwxyz"
 		"0123456789+/";
