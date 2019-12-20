@@ -11,7 +11,8 @@
 #include "smtp/client.h"
 
 template <typename T>
-class lock_queue {
+class lock_queue
+{
 	std::queue<T> queue_;
 	std::mutex m_;
 public:
@@ -132,14 +133,11 @@ public:
 		return task_ptr->get_future();
 	}
 
-	std::future<bool> send_mail(smtp::client client, mail mail);
-
+	std::future<bool> send_mail(smtp::client client, mail* mail, smtp::auth auth)
+	{
+		return submit_func(std::bind(&smtp::client::send, client, mail, auth));
+	}
 };
-
-std::future<bool> message_queue::send_mail(smtp::client client, mail* mail, smtp::auth auth)
-{
-	return submit_func(std::bind(&smtp::client::send, mail, auth));
-}
 
 template<typename R>
 bool is_ready(std::future<R> const& f)
