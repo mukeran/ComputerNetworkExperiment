@@ -62,19 +62,26 @@ class message_queue
 		worker(message_queue* mq, const int id) : id_(id), mq_(mq) {}
 		void operator()() const
 		{
+			logger::debug("Worker " + std::to_string(id_) + " created!");
 			std::function<void()> func;
 			while (!mq_->shutdown_)
 			{
 				std::unique_lock<std::mutex> lock(mq_->conditional_mutex_);
+
 				while (mq_->queue_.empty())
 				{
-					mq_->cv_.wait(lock);
+					//logger::debug("Worker" + std::to_string(id_) + " get to sleep");
+					mq_->cv_.wait(lock);// The wait operations atomically release the mutex and suspend the execution of the thread.
+					// the mutex is atomically reacquired.
+					//logger::debug("Worker" + std::to_string(id_) + " waked");
 				}
+				logger::debug("Worker" + std::to_string(id_) + "get a task.");
 				const auto dequeued = mq_->queue_.dequeue(func); // get task
 				if (dequeued)
 				{
 					func();
 				}
+				//logger::debug("Worker" + std::to_string(id_) + " finished task");
 			}
 		}
 	};
@@ -94,13 +101,19 @@ public:
 	message_queue& operator=(const message_queue&) = delete;
 	message_queue& operator=(message_queue&&) = delete;
 
+	~message_queue()
+	{
+		shutdown();
+	}
+
 	void init()
 	{
 		const int size = threads_.size();
 		for (auto i = 0; i < size; ++i)
 		{
 			threads_[i] = std::thread(worker(this, i));
-			threads_[i].detach();
+			auto thread_id = threads_[i].get_id();
+			//logger::debug("create a new thread: " + i);
 		}
 	}
 
@@ -113,6 +126,7 @@ public:
 		const int size = threads_.size();
 		for (auto i = 0; i < size; ++i)
 		{
+			logger::debug("joining thread: " + std::to_string(i) +"which is: " + std::to_string(threads_[i].joinable()));
 			if (threads_[i].joinable())
 			{
 				threads_[i].join();
@@ -129,19 +143,19 @@ public:
 		{
 			(*task_ptr)();
 		};
-		std::unique_lock<std::mutex> lock(instance->conditional_mutex_);
 		queue_.enqueue(wrapper_func);
+		std::lock_guard<std::mutex> lock(instance->conditional_mutex_);
 		cv_.notify_one();
 		return task_ptr->get_future();
 	}
 
-	std::future<bool> send_mail(smtp::client& client, mail mail, const smtp::auth& auth)
+	std::future<bool> send_mail(mail mail, const smtp::auth& auth)
 	{
 		logger::info("Mail " + mail.uuid + " is pushing into message queue");
-		return submit_func([&client, mail, auth]()
+		return submit_func([mail, auth]()
 		{
 			auto m = mail;
-			return client.send(&m, auth);
+			return smtp::client::instance->send(&m, auth);
 		});
 	}
 };
