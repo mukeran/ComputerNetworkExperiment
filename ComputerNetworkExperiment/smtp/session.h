@@ -3,6 +3,8 @@
 #include "../mail.h"
 #include "auth.h"
 #include "../utils.h"
+#include "../logger.h"
+#include <iostream>
 
 namespace smtp
 {

@@ -128,7 +128,6 @@ public:
 		{
 			(*task_ptr)();
 		};
-
 		queue_.enqueue(wrapper_func);
 		cv_.notify_one();
 		return task_ptr->get_future();
@@ -136,6 +135,7 @@ public:
 
 	std::future<bool> send_mail(smtp::client client, mail* mail, smtp::auth auth)
 	{
+		logger::info("Mail " + mail->uuid + " is pushing into message queue");
 		return submit_func(std::bind(&smtp::client::send, client, mail, auth));
 	}
 };

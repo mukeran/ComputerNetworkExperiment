@@ -4,30 +4,27 @@
 #include <fstream>
 #include <ctime>
 #include <mutex>
+using std::string;
+using std::cout;
+using std::endl;
 
 class logger
 {
-public:
-
-
-	static void info(std::string x) { self->log(std::string("[INFO]") + x); }
-	static void warning(std::string x) { self->log(std::string("[WARNING]") + x); }
-	static void critical(std::string x) { self->log(std::string("[CRITICAL]") + x); }
-	static void debug(std::string x) { self->log(std::string("[DEBUG]") + x); }
-	static void error(std::string x) { self->log(std::string("[ERROR]") + x); }
-	static std::string get_time();
-
-	static std::string get_log_name();
-
-private:
-	logger(const std::string LogFile);
+	explicit logger(const string& log_file);
 	~logger();
-
-	void log(std::string x);
-	std::string path;
-	std::ofstream ofs;
-	static logger* self;
-	std::mutex mt;
+	void log(const string& x);
+	string path_;
+	std::ofstream ofs_;
+	std::mutex mt_;
+public:
+	static void info(const string& x) { instance->log(string("[INFO] ") + x); }
+	static void warning(const string& x) { instance->log(string("[WARNING] ") + x); }
+	static void critical(const string& x) { instance->log(string("[CRITICAL] ") + x); }
+	static void debug(const string& x) { instance->log(string("[DEBUG] ") + x); }
+	static void error(const string& x) { instance->log(string("[ERROR] ") + x); }
+	static string get_time();
+	static string get_log_name();
+	static logger* instance;
 	static bool print;
 };
 

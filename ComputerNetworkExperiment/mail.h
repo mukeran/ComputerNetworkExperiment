@@ -11,6 +11,14 @@ using std::vector;
 
 typedef map<string, string> kv;
 
+enum class mail_status
+{
+	pending = 0,
+	sending = 1,
+	failed = 2,
+	success = 3
+};
+
 class mail
 {
 public:
@@ -22,6 +30,7 @@ public:
 	string to;
 	string subject;
 	string content;
+	mail_status status;
 	time_t created_time;
 	time_t sent_time;
 	vector<string> log;

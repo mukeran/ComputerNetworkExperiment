@@ -3,6 +3,7 @@
 mail::mail()
 {
 	uuid = utils::random_uuid();
+	status = mail_status::pending;
 	created_time = time(nullptr);
 	sent_time = 0;
 }
@@ -14,6 +15,7 @@ mail::mail(const string& uuid, const kv& fields)
 	to = fields.at("to");
 	subject = fields.at("subject");
 	content = fields.at("content");
+	status = static_cast<mail_status>(std::stoi(fields.at("status")));
 	created_time = std::stoll(fields.at("created_time"));
 	sent_time = std::stoll(fields.at("sent_time"));
 	std::stringstream ss(fields.at("log"));
@@ -32,6 +34,7 @@ mail::mail(const string& from, const string& to, const string& subject, const st
 	this->to = to;
 	this->subject = subject;
 	this->content = content;
+	this->status = mail_status::pending;
 	created_time = time(nullptr);
 	sent_time = 0;
 }
@@ -53,6 +56,7 @@ kv mail::get_kv() const
 	fields["to"] = to;
 	fields["subject"] = subject;
 	fields["content"] = content;
+	fields["status"] = std::to_string(static_cast<int>(status));
 	fields["created_time"] = std::to_string(created_time);
 	fields["sent_time"] = std::to_string(sent_time);
 	string encoded;

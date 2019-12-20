@@ -1,6 +1,8 @@
 #pragma once
 #include "request.h"
 #include "response.h"
+#include "../handler.h"
+#include "../logger.h"
 #include <Ws2tcpip.h>
 #include <iostream>
 #include <string>
@@ -33,7 +35,6 @@ namespace http
 	
 	class server
 	{
-	private:
 		string address_;
 		u_short port_;
 		SOCKET sock_;
@@ -41,6 +42,7 @@ namespace http
 	public:
 		server(const string& address, u_short port);
 		void start(const int backlog = 20);
+		static u_int get_thread_id();
 		static meta parse_meta(const string& line);
 		static kv parse_header(const string& data);
 		static string receive(SOCKET client, u_int size);

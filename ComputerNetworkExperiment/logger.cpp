@@ -1,56 +1,47 @@
 #include "logger.h"
 
-
-logger* logger::self = new logger(logger::get_log_name());
-bool logger::print = true;
-
-logger::logger(std::string path)
+logger::logger(const string& log_file)
 {
-	// 判断log文件存在性,打开文件
-	// 
-	//
-	
-	ofs.open(path, std::ofstream::app);
-	if (!ofs.is_open())
+	ofs_.open(log_file, std::ofstream::app);
+	if (!ofs_.is_open())
 	{
-		std::cout << "[ERROR] open log file failed !" << std::endl;
+		cout << get_time() << "[ERROR] Failed to open log file!" << endl;
 		return;
 	}
+	cout << get_time() << "[INFO] The log will be written to " << log_file << endl;
 }
 
 logger::~logger()
 {
-	ofs.close();
+	ofs_.close();
 }
 
-void logger::log(std::string s)
+void logger::log(const string& x)
 {
-	std::unique_lock<std::mutex> lock(mt);
-	ofs.seekp(std::ios::end);
-	std::string time = get_time();
-	ofs << time /* << "[" << __FILE__ << "]"*/ << s << std::endl;
+	std::unique_lock<std::mutex> lock(mt_);
+	ofs_.seekp(std::ios::end);
+	const auto time = get_time();
+	ofs_ << time << x << endl;
 	if (print)
-	{
-		std::cout << time << s << std::endl;
-	}
+		cout << time << x << endl;
 }
 
 std::string logger::get_time()
 {
-	time_t t = time(0);
-	struct tm tm_;
+	auto t = time(nullptr);
+	tm tm;
 	char tmp[64];
-	localtime_s(&tm_, &t);
-	strftime(tmp, sizeof(tmp), "[%Y-%m-%d %X]", &tm_);
+	localtime_s(&tm, &t);
+	strftime(tmp, sizeof(tmp), "[%Y-%m-%d %X]", &tm);
 	return std::string(tmp);
 }
 
 std::string logger::get_log_name()
 {
-	time_t t = time(0);
-	struct tm tm_;
+	auto t = time(nullptr);
+	tm tm;
 	char tmp[64];
-	localtime_s(&tm_, &t);
-	strftime(tmp, sizeof(tmp), "log-%Y-%m-%d %H-%M.txt", &tm_);
+	localtime_s(&tm, &t);
+	strftime(tmp, sizeof(tmp), "log-%Y%m%d%H%M.txt", &tm);
 	return std::string(tmp);
 }

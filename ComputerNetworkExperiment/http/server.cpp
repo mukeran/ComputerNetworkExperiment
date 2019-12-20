@@ -1,5 +1,4 @@
 #include "server.h"
-#include "../handler.h"
 
 namespace http
 {
@@ -18,7 +17,7 @@ namespace http
 	void server::start(const int backlog)
 	{
 		listen(this->sock_, backlog);
-		cout << "The server is listening at " << this->address_ << ":" << this->port_ << endl;
+		logger::info("The web server is listening at " + this->address_ + ":" + std::to_string(this->port_));
 
 		int len = sizeof SOCKADDR;
 
@@ -28,12 +27,18 @@ namespace http
 			auto client = accept(this->sock_, reinterpret_cast<SOCKADDR*>(&client_sa), &len);
 			if (client == INVALID_SOCKET)
 			{
-				cout << "Error occured: " << WSAGetLastError() << endl;
-				exit(1);
+				logger::error("Error occured: " + std::to_string(WSAGetLastError()));
+				exit(3);
 			}
 			thread t(client_accept, this, client, client_sa);
 			t.detach();
 		}
+	}
+
+	u_int server::get_thread_id()
+	{
+		auto thread_id = std::this_thread::get_id();
+		return (*reinterpret_cast<_Thrd_t*>(reinterpret_cast<char*>(&thread_id)))._Id;
 	}
 
 	string trim(string str)
@@ -101,10 +106,11 @@ namespace http
 			const auto received = recv(client, buffer, prefer, 0);
 			if (received <= 0) {
 				const auto error_code = WSAGetLastError();
+				const auto thread_id = get_thread_id();
 				if (error_code == WSAETIMEDOUT)
-					cout << "Receive aborted in thread " << std::this_thread::get_id() << " due to timeout" << endl;
+					logger::warning("Receive aborted in thread " + std::to_string(thread_id) + " due to timeout");
 				else
-					cout << "Failed to received request in thread " << std::this_thread::get_id() <<  ". Error code: " << WSAGetLastError() << endl;
+					logger::error("Failed to received request in thread " + std::to_string(thread_id) + ". Error code: " + std::to_string(WSAGetLastError()));
 			}
 			data += buffer;
 		}
@@ -115,10 +121,11 @@ namespace http
 	{
 		const auto raw = resp.raw();
 		const auto sent = send(client, raw.data(), raw.length(), 0);
+		const auto thread_id = get_thread_id();
 		if (sent == SOCKET_ERROR)
-			cout << "Failed to send response in thread " << std::this_thread::get_id() << ". Error code: " << WSAGetLastError() << endl;
+			logger::error("Failed to send response in thread " + std::to_string(thread_id) + ". Error code: " + std::to_string(WSAGetLastError()));
 		else
-			cout << "Response sent in thread " << std::this_thread::get_id() << endl << "----- begin response -----" << endl << raw << "----- end response -----" << endl;
+			logger::info("Response sent in thread " + std::to_string(thread_id));
 		return sent;
 	}
 
@@ -128,7 +135,8 @@ namespace http
 		memset(ip, 0, sizeof ip);
 		const UINT port = ntohs(client_sa.sin_port);
 		inet_ntop(AF_INET, &client_sa.sin_addr, ip, INET6_ADDRSTRLEN);
-		cout << "Created thread " << std::this_thread::get_id() << " for connection from " << ip << ":" << port << endl;
+		const auto thread_id = get_thread_id();
+		logger::info("Created thread " + std::to_string(thread_id) + " for connection from " + ip + ":" + std::to_string(port));
 		char buffer[max_buffer_size + 1];
 		string data;
 		while (true)
@@ -139,9 +147,9 @@ namespace http
 			if (received <= 0) {
 				const auto error_code = WSAGetLastError();
 				if (error_code == WSAETIMEDOUT)
-					cout << "Receive aborted in thread " << std::this_thread::get_id() << " due to timeout" << endl;
+					logger::warning("Receive aborted in thread " + std::to_string(thread_id) + " due to timeout");
 				else
-					cout << "Failed to received request in thread " << std::this_thread::get_id() << ". Error code: " << WSAGetLastError() << endl;
+					logger::error("Failed to received request in thread " + std::to_string(thread_id) + ". Error code: " + std::to_string(WSAGetLastError()));
 				break;
 			}
 			data += buffer;
@@ -214,6 +222,6 @@ namespace http
 			data = data.substr(border_offset);
 		}
 		closesocket(client);
-		cout << "Connection closed in thread " << std::this_thread::get_id() << " for connection from " << ip << ":" << port << endl;
+		logger::info("Connection closed in thread " + std::to_string(thread_id) + " for connection from " + ip + ":" + std::to_string(port));
 	}
 }

@@ -1,5 +1,7 @@
 #pragma once
 #include "auth.h"
+#include "../file_system.h"
+#include "../logger.h"
 #include "../mail.h"
 #include <iostream>
 #include <string>

@@ -16,6 +16,8 @@ void init_socket()
 	WSAStartup(MAKEWORD(2, 2), &wsa_data);
 }
 
+logger* logger::instance = new logger(get_log_name());
+bool logger::print = true;
 file_system* file_system::instance;
 message_queue* message_queue::instance;
 smtp::client* smtp::client::instance;
@@ -32,15 +34,18 @@ int main(const int argc, const char* argv[])
 	init_socket();
 	try
 	{
+		logger::info("Start to initialize components...");
 		smtp::client::instance = new smtp::client(argv[1], std::stoi(argv[2]));
+		message_queue::instance = new message_queue(max_message_queue_thread);
+		file_system::instance = new file_system();
+		logger::info("Components initialized");
+		logger::info("The SMTP server has been set to " + string(argv[1]) + ":" + string(argv[2]));
+		http::server server("0.0.0.0", 8080);
+		server.start();
 	}
 	catch (std::exception& e)
 	{
 		logger::error(e.what());
 		return 2;
 	}
-	message_queue::instance = new message_queue(max_message_queue_thread);
-	file_system::instance = new file_system();
-	http::server server("0.0.0.0", 8080);
-	server.start();
 }
