@@ -1,7 +1,7 @@
 #include "logger.h"
 
 
-logger* logger::self = new logger(std::string(".\\log.txt"));
+logger* logger::self = new logger(logger::get_log_name());
 bool logger::print = true;
 
 logger::logger(std::string path)
@@ -9,6 +9,7 @@ logger::logger(std::string path)
 	// 判断log文件存在性,打开文件
 	// 
 	//
+	
 	ofs.open(path, std::ofstream::app);
 	if (!ofs.is_open())
 	{
@@ -41,5 +42,15 @@ std::string logger::get_time()
 	char tmp[64];
 	localtime_s(&tm_, &t);
 	strftime(tmp, sizeof(tmp), "[%Y-%m-%d %X]", &tm_);
+	return std::string(tmp);
+}
+
+std::string logger::get_log_name()
+{
+	time_t t = time(0);
+	struct tm tm_;
+	char tmp[64];
+	localtime_s(&tm_, &t);
+	strftime(tmp, sizeof(tmp), "log-%Y-%m-%d %H-%M.txt", &tm_);
 	return std::string(tmp);
 }

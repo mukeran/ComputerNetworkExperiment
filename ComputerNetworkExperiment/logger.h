@@ -15,7 +15,9 @@ public:
 	static void critical(std::string x) { self->log(std::string("[CRITICAL]") + x); }
 	static void debug(std::string x) { self->log(std::string("[DEBUG]") + x); }
 	static void error(std::string x) { self->log(std::string("[ERROR]") + x); }
+	static std::string get_time();
 
+	static std::string get_log_name();
 
 private:
 	logger(const std::string LogFile);
@@ -26,7 +28,6 @@ private:
 	std::ofstream ofs;
 	static logger* self;
 	std::mutex mt;
-	std::string get_time();
 	static bool print;
 };
 
