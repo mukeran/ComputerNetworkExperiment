@@ -1,56 +1,54 @@
-// #include "FileSystem.h"
+#include "file_system.h"
 
-// void file_system::save_mail(mail* input_mail)
-// {
-// 	const string filepath = "..\\MailDataStorage\\";
-	
-// 	map<string, string> encoded_mail_data = input_mail->get_encoded_data();
-// 	map<string, string>::iterator it;
+file_system::file_system()
+{
+	if (_access(storage_path.data(), 0) == -1)
+		_mkdir(storage_path.data());
+}
 
-// 	string encoded_uuid = encoded_mail_data["VVVJRA=="];
-// 	string uuid = base64_encoder::base64_decode(encoded_uuid);
-// 	mail_uuid->insert(uuid);
+void file_system::save_mail(mail* mail) const
+{
+	auto data = mail->get_kv();
+	std::ofstream fs(storage_path + "\\" + mail->uuid, std::ios::out);
+	for (auto it = data.begin(); it != data.end(); ++it)
+		fs << utils::base64_encode(it->first) + " " + utils::base64_encode(it->second) + "\n";
+	fs.close();
+}
 
-// 	std::ofstream fout;
-// 	fout.open((filepath + uuid).c_str(), std::ios::out | std::ios::app);
+vector<mail> file_system::get_mail_list() const
+{
+	vector<mail> list;
+	_finddata_t file_info;
+	const auto handle = _findfirst((storage_path + "\\*").data(), &file_info);
+	if (handle == -1)
+		return list;
+	do
+	{
+		if (!utils::is_uuid(file_info.name))
+			continue;
+		list.emplace_back(this->get_mail(file_info.name));
+	} while (!_findnext(handle, &file_info));
+	_findclose(handle);
+	return list;
+}
 
-	
-// 	for (it = encoded_mail_data.begin(); it != encoded_mail_data.end(); ++it)
-// 		fout << it->first << ' ' << it->second << '\n';
-
-// 	fout.close();
-// }
-
-// set<string> file_system::get_uuid_list()
-// {
-// 	return *mail_uuid;
-// }
-
-// map<string, string> file_system::load_mail(const std::string& uuid)
-// {
-// 	map<string, string>* ret = new map<string, string>;
-// 	string filepath = "..\\MailDataStorage\\" + uuid;
-// 	std::ifstream fin;
-// 	fin.open(filepath.c_str(), std::ios::in);
-
-// 	while (!fin.eof())
-// 	{
-// 		string encoded_key, encoded_value;
-// 		fin >> encoded_key >> encoded_value;
-
-// 		if (encoded_key.empty())
-// 			continue;
-		
-// 		string key, value;
-// 		key = base64_encoder::base64_decode(encoded_key);
-// 		value = base64_encoder::base64_decode(encoded_value);
-
-// 		(*ret)[key] = value;
-// 	}
-
-// 	fin.close();
-
-// 	return *ret;
-// }
-
-
+mail file_system::get_mail(const string& uuid) const
+{
+	const auto path = storage_path + "\\" + uuid;
+	if (_access(path.data(), 0) == -1)
+		throw std::exception("No such mail");
+	std::ifstream fs(storage_path + "\\" + uuid, std::ios::in);
+	map<string, string> fields;
+	while (!fs.eof())
+	{
+		string line;
+		getline(fs, line);
+		std::stringstream ss(line);
+		string key, value;
+		ss >> key >> value;
+		fields[utils::base64_decode(key)] = utils::base64_decode(value);
+	}
+	fs.close();
+	mail mail(uuid, fields);
+	return mail;
+}

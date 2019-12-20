@@ -1,4 +1,6 @@
 #include "utils.h"
+#include "utils.h"
+#include <ctime>
 
 namespace utils
 {
@@ -89,5 +91,38 @@ namespace utils
 		}
 
 		return ret;
+	}
+	bool is_uuid(const string& str)
+	{
+		if (str.length() != 35)
+			return false;
+		if (str.at(8) != '-' || str.at(13) != '-' || str.at(18) != '-')
+			return false;
+		for (auto i = 0u; i < str.length(); ++i)
+		{
+			if (i == 8 || i == 13 || i == 18) continue;
+			if (!((str.at(i) >= '0' && str.at(i) <= '9') || (str.at(i) >= 'a' && str.at(i) <= 'f')))
+				return false;
+		}
+		return true;
+	}
+
+	string random_uuid()
+	{
+		const string uuid_chars = "0123456789abcdef";
+		srand(time(nullptr));
+		string uuid;
+		for (auto i = 1; i <= 8; ++i)
+			uuid += uuid_chars[rand() % 16];
+		uuid += '-';
+		for (auto i = 1; i <= 4; ++i)
+			uuid += uuid_chars[rand() % 16];
+		uuid += '-';
+		for (auto i = 1; i <= 4; ++i)
+			uuid += uuid_chars[rand() % 16];
+		uuid += '-';
+		for (auto i = 1; i <= 16; ++i)
+			uuid += uuid_chars[rand() % 16];
+		return uuid;
 	}
 }

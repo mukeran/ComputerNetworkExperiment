@@ -11,4 +11,6 @@ namespace utils
 	bool is_base64(const unsigned char c);
 	string base64_encode(const string& string_to_encode);
 	string base64_decode(const string& encoded_string);
+	bool is_uuid(const string& str);
+	string random_uuid();
 }

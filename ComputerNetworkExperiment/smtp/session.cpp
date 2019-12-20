@@ -39,45 +39,36 @@ namespace smtp
 	
 	void session::ehlo() const
 	{
-		const auto res = send("EHLO ncat.xyz\r\n");
-		mail_->log.push_back(res);
+		mail_->append_log(send("EHLO ncat.xyz\r\n"));
 	}
 	
 	void session::auth() const
 	{
 		const auto username = utils::base64_encode(auth_.username);
 		const auto password = utils::base64_encode(auth_.password);
-		auto res = send("AUTH LOGIN\r\n");
-		mail_->log.push_back(res);
-		res = send(username + "\r\n");
-		mail_->log.push_back(res);
-		res = send(password + "\r\n");
-		mail_->log.push_back(res);
+		mail_->append_log(send("AUTH LOGIN\r\n"));
+		mail_->append_log(send(username + "\r\n"));
+		mail_->append_log(send(password + "\r\n"));
 	}
 	
 	void session::mail_from() const
 	{
-		const auto res = send("MAIL FROM:" + mail_->from + "\r\n");
-		mail_->log.push_back(res);
+		mail_->append_log(send("MAIL FROM:" + mail_->from + "\r\n"));
 	}
 	
 	void session::rcpt_to() const
 	{
-		const auto res = send("RCPT TO:" + mail_->to + "\r\n");
-		mail_->log.push_back(res);
+		mail_->append_log(send("RCPT TO:" + mail_->to + "\r\n"));
 	}
 	
 	void session::data() const
 	{
-		auto res = send("DATA\r\n");
-		mail_->log.push_back(res);
-		res = send(mail_->to_string());
-		mail_->log.push_back(res);
+		mail_->append_log(send("DATA\r\n"));
+		mail_->append_log(send(mail_->to_string()));
 	}
 	
 	void session::quit() const
 	{
-		const auto res = send("QUIT\r\n");
-		mail_->log.push_back(res);
+		mail_->append_log(send("QUIT\r\n"));
 	}
 };
