@@ -34,12 +34,12 @@ namespace http
 	class server
 	{
 	private:
-		char* address_;
+		string address_;
 		u_short port_;
 		SOCKET sock_;
 		SOCKADDR_IN sa_;
 	public:
-		server(const char* address, u_short port);
+		server(const string& address, u_short port);
 		void start(const int backlog = 20);
 		static meta parse_meta(const string& line);
 		static kv parse_header(const string& data);

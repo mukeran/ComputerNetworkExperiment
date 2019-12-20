@@ -152,6 +152,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="mail.cpp" />
     <ClCompile Include="smtp\session.cpp" />
     <ClCompile Include="smtp\auth.cpp" />
     <ClCompile Include="ComputerNetworkExperiment.cpp" />

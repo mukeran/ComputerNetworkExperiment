@@ -13,4 +13,5 @@ public:
 	string subject;
 	string content;
 	vector<string> log;
+	string to_string() const;
 };

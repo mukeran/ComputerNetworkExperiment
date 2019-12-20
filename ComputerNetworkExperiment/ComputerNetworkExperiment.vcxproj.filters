@@ -57,6 +57,9 @@
     <ClCompile Include="smtp\session.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="mail.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HTTP\server.h">

@@ -12,7 +12,6 @@
 
 template <typename T>
 class lock_queue {
-private:
 	std::queue<T> queue_;
 	std::mutex m_;
 public:
@@ -133,13 +132,13 @@ public:
 		return task_ptr->get_future();
 	}
 
-	std::future<bool> send_mail(smtp::client client, Mail mail);
+	std::future<bool> send_mail(smtp::client client, mail mail);
 
 };
 
-std::future<bool> message_queue::send_mail(smtp::client client, Mail mail)
+std::future<bool> message_queue::send_mail(smtp::client client, mail* mail, smtp::auth auth)
 {
-	return submit_func(std::bind(&SMTPClient::SendMail, &client, mail));
+	return submit_func(std::bind(&smtp::client::send, mail, auth));
 }
 
 template<typename R>
