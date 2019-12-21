@@ -1,10 +1,10 @@
 ﻿#include "session.h"
 
 #define CHECK_STATUS(code, want) \
-	if ((code) != (want))\
-	{\
-		mail_->append_log("Error: " + (code) + " " + status_string.at(code));\
-		throw std::exception(("Server do not return " + (code)).data());\
+	if ((code) != (want)) \
+	{ \
+		mail_->append_log("Error: " + (code) + " " + status_string.at(code)); \
+		throw std::exception(("Server do not return " + (code)).data()); \
 	}
 
 

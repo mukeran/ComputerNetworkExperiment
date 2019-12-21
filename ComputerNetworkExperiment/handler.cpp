@@ -35,8 +35,8 @@ void handler::handle(const request& req, response* resp)
 		const auto to = utils::split(form_fields.at("to"), ';');
 		mail m(from, to, form_fields.at("subject"),form_fields.at("content"));
 		file_system::instance->save_mail(&m);
-		string username = form_fields.at("username");
-		string password = form_fields.at("password");
+		const auto username = form_fields.at("username");
+		const auto password = form_fields.at("password");
 		message_queue::instance->send_mail(m, smtp::auth{ username,password });
 
 		resp->set_status(http::status_code::found);
@@ -97,7 +97,7 @@ void handler::handle(const request& req, response* resp)
 		for (auto it = m.log.cbegin(); it != m.log.cend(); ++it)
 		{
 			msg += html_escape_string(*it);
-			msg += R"(</br>)";
+			msg += R"(<br>)";
 		}
 		const auto created_time = get_time_string(m.created_time);
 		const auto sent_time = get_time_string(m.sent_time);

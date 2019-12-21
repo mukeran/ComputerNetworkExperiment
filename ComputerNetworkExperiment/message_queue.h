@@ -21,19 +21,16 @@ public:
 	
 	bool empty()
 	{
-		std::unique_lock<std::mutex> lock(m_);
 		return queue_.empty();
 	}
 
 	int size()
 	{
-		std::unique_lock<std::mutex> lock(m_);
 		return queue_.size();
 	}
 		
 	void enqueue(T& t)
 	{
-		std::unique_lock<std::mutex> lock(m_);
 		queue_.push(t);
 	}
 
@@ -75,7 +72,7 @@ class message_queue
 					// the mutex is atomically reacquired.
 					//logger::debug("Worker" + std::to_string(id_) + " waked");
 				}
-				logger::debug("Worker" + std::to_string(id_) + "get a task.");
+				logger::debug("Worker " + std::to_string(id_) + " got a task.");
 				const auto dequeued = mq_->queue_.dequeue(func); // get task
 				if (dequeued)
 				{
@@ -112,6 +109,7 @@ public:
 		for (auto i = 0; i < size; ++i)
 		{
 			threads_[i] = std::thread(worker(this, i));
+			threads_[i].detach();
 			auto thread_id = threads_[i].get_id();
 			//logger::debug("create a new thread: " + i);
 		}
@@ -144,12 +142,11 @@ public:
 			(*task_ptr)();
 		};
 		queue_.enqueue(wrapper_func);
-		std::lock_guard<std::mutex> lock(instance->conditional_mutex_);
 		cv_.notify_one();
 		return task_ptr->get_future();
 	}
 
-	std::future<bool> send_mail(mail mail, const smtp::auth& auth)
+	std::future<bool> send_mail(const mail& mail, const smtp::auth& auth)
 	{
 		logger::info("Mail " + mail.uuid + " is pushing into message queue");
 		return submit_func([mail, auth]()
