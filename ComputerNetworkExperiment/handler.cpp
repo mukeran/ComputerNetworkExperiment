@@ -35,9 +35,9 @@ void handler::handle(const request& req, response* resp)
 		const auto to = utils::split(form_fields.at("to"), ';');
 		mail m(from, to, form_fields.at("subject"),form_fields.at("content"));
 		file_system::instance->save_mail(&m);
-		const auto username = form_fields.at("username");
-		const auto password = form_fields.at("password");
-		message_queue::instance->send_mail(*smtp::client::instance, m, smtp::auth{ username,password });
+		string username = form_fields.at("username");
+		string password = form_fields.at("password");
+		message_queue::instance->send_mail(m, smtp::auth{ username,password });
 
 		resp->set_status(http::status_code::found);
 		resp->set_header("Location", "/detail/" + m.uuid);
