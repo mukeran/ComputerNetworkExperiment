@@ -25,27 +25,33 @@
         <h1> Send a Mail</h1>
         <div class="row">
             <div class="col">
-                <form method="POST">
+                <form method="POST" id="form">
                     <div class="form-group">
                         <label for="auth">Auth :</label>
                         <div class="input-group">
-                            <input placeholder="Username" name="username" type="text" class="form-control">
-                            <input placeholder="Password" name="password" type="password" class="form-control" id="auth">        
+                            <input required placeholder="Username" name="username" type="text" class="form-control">
+                            <input required placeholder="Password" name="password" type="password" class="form-control" id="auth">        
                         </div>
                         <label for="sender">From :</label>
                         <div class="input-group">
-                            <input placeholder="Name" name="from_name" type="text" class="col-md-3 form-control">
-                            <input placeholder="Email" name="from_email" type="email" class="form-control" id="sender">        
+                            <input type="hidden" name="to" id="to">
+                            <input required placeholder="Name" name="from_name" type="text" class="col-3 form-control">
+                            <input required placeholder="Email" name="from_email" type="email" class="form-control" id="sender">        
                         </div>
                         <label for="receiver">To :</label>
-                        <div class="input-group">
-                            <input placeholder="Name" name="to_name" type="text" class="col-md-3 form-control">
-                            <input placeholder="Email" name="to_email" type="email" class="form-control" id="receiver">
+                        <div class="input-group receiver-control" id="receiver">
+                            <input type="hidden" name="to" id="to">
+                            <input required placeholder="Name" type="text" class="col-3 form-control">
+                            <input required placeholder="Email" type="email" class="form-control">
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary" type="button" id="add_receiver" onclick="add_input()">+</button>
+                            </div>
                         </div>
+                        
                         <label for="subject">Subject :</label>
-                        <input name="subject" type="text" class="form-control" id="subject">
+                        <input required name="subject" type="text" class="form-control" id="subject">
                         <label for="content">Content :</label>
-                        <textarea name="content" class="form-control" id="content" rows="3"></textarea>
+                        <textarea rows="6" required name="content" class="form-control" id="content" rows="3"></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </form>
@@ -56,4 +62,35 @@
         </div>
     </div>
 </body>
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+<script>
+    function add_input() {
+        receiver_inputs = '<div class="input-group receiver-control">\
+                            <input placeholder="Name" type="text" class="col-3 form-control">\
+                            <input placeholder="Email" type="email" class="form-control">\
+                            <div class="input-group-append">\
+                                <button class="btn btn-outline-secondary" type="button" onclick="delete_input(this)">-</button>\
+                            </div>\
+                        </div>'
+        $('#receiver').after(receiver_inputs)
+    }
+    function delete_input(that) {
+        // console.log(that)
+        $(that).parent().parent().remove()
+    }
+    $('#form').submit(function () {
+        s = ''
+        divs = $('.receiver-control')
+        for(i=0;i<divs.length;i++)
+        {
+            inps = $(divs[i]).find('.form-control')
+            // console.log(inps)
+            s += inps[0].value + ' <'
+            s += inps[1].value + '>;'
+        }
+        $('#to').val(s);
+        // console.log(s)
+        return true
+    })
+</script>
 </html>
