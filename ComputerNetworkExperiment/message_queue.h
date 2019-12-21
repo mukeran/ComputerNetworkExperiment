@@ -70,7 +70,6 @@ public:
 		for (auto i = 0; i < size; ++i)
 		{
 			threads_[i] = std::thread(worker(this, i));
-			threads_[i].detach();
 			auto thread_id = threads_[i].get_id();
 			//logger::debug("create a new thread: " + i);
 		}

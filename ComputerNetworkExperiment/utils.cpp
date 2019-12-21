@@ -1,6 +1,4 @@
 #include "utils.h"
-#include "utils.h"
-#include <ctime>
 
 namespace utils
 {
@@ -110,7 +108,7 @@ namespace utils
 	string random_uuid()
 	{
 		const string uuid_chars = "0123456789abcdef";
-		srand(time(nullptr));
+		srand(GetTickCount() * 117 + get_thread_id());
 		string uuid;
 		for (auto i = 1; i <= 8; ++i)
 			uuid += uuid_chars[rand() % 16];
@@ -153,5 +151,13 @@ namespace utils
 			str = str.substr(pos + 1);
 		}
 		return vec;
+	}
+
+	u_int get_thread_id()
+	{
+		const auto thread_id = std::this_thread::get_id();
+		std::ostringstream oss;
+		oss << thread_id;
+		return std::stoi(oss.str());
 	}
 }

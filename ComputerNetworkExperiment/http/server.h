@@ -42,7 +42,6 @@ namespace http
 	public:
 		server(const string& address, u_short port);
 		void start(const int backlog = 20);
-		static u_int get_thread_id();
 		static meta parse_meta(const string& line);
 		static kv parse_header(const string& data);
 		static string receive(SOCKET client, u_int size);

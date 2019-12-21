@@ -26,9 +26,9 @@ int main(const int argc, const char* argv[])
 {
 	if (argc != 3)
 	{
-		cout << "Invalid parameters. Please type the command in following format:" << endl;
-		cout << "ComputerNetworkExperiment.exe <ip> <port>" << endl;
-		cout << "Notice: <ip> means the SMTP server of the sender email account; <port> means its SMTP port." << endl;
+		logger::error("Invalid parameters. Please type the command in following format:");
+		logger::error("ComputerNetworkExperiment.exe <ip> <port>");
+		logger::error("Notice: <ip> means the SMTP server of the sender email account; <port> means its SMTP port.");
 		return 1;
 	}
 	init_socket();

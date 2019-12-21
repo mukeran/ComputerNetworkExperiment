@@ -1,6 +1,11 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <ctime>
+#include <winsock2.h>
+#include <sysinfoapi.h>
+#include <thread>
+#include <sstream>
 using std::string;
 using std::vector;
 
@@ -17,4 +22,5 @@ namespace utils
 	string random_uuid();
 	string join(const vector<string>& vec, const char c);
 	vector<string> split(string str, const char c);
+	u_int get_thread_id();
 }

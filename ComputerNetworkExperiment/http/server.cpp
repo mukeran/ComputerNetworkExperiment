@@ -35,14 +35,6 @@ namespace http
 		}
 	}
 
-	u_int server::get_thread_id()
-	{
-		const auto thread_id = std::this_thread::get_id();
-		std::ostringstream oss;
-		oss << thread_id;
-		return std::stoi(oss.str());
-	}
-
 	string trim(string str)
 	{
 		while (str.length() && (*str.begin() == ' ' || *str.begin() == '\r' || *str.begin() == '\n')) str.erase(str.begin());
@@ -108,7 +100,7 @@ namespace http
 			const auto received = recv(client, buffer, prefer, 0);
 			if (received <= 0) {
 				const auto error_code = WSAGetLastError();
-				const auto thread_id = get_thread_id();
+				const auto thread_id = utils::get_thread_id();
 				if (error_code == WSAETIMEDOUT)
 					logger::warning("Receive aborted in thread " + std::to_string(thread_id) + " due to timeout");
 				else
@@ -123,7 +115,7 @@ namespace http
 	{
 		const auto raw = resp.raw();
 		const auto sent = send(client, raw.data(), raw.length(), 0);
-		const auto thread_id = get_thread_id();
+		const auto thread_id = utils::get_thread_id();
 		if (sent == SOCKET_ERROR)
 			logger::error("Failed to send response in thread " + std::to_string(thread_id) + ". Error code: " + std::to_string(WSAGetLastError()));
 		else
@@ -137,7 +129,7 @@ namespace http
 		memset(ip, 0, sizeof ip);
 		const UINT port = ntohs(client_sa.sin_port);
 		inet_ntop(AF_INET, &client_sa.sin_addr, ip, INET6_ADDRSTRLEN);
-		const auto thread_id = get_thread_id();
+		const auto thread_id = utils::get_thread_id();
 		logger::info("Created thread " + std::to_string(thread_id) + " for connection from " + ip + ":" + std::to_string(port));
 		char buffer[max_buffer_size + 1];
 		string data;
