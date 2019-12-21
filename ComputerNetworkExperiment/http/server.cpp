@@ -37,8 +37,10 @@ namespace http
 
 	u_int server::get_thread_id()
 	{
-		auto thread_id = std::this_thread::get_id();
-		return (*reinterpret_cast<_Thrd_t*>(reinterpret_cast<char*>(&thread_id)))._Id;
+		const auto thread_id = std::this_thread::get_id();
+		std::ostringstream oss;
+		oss << thread_id;
+		return std::stoi(oss.str());
 	}
 
 	string trim(string str)
@@ -110,7 +112,7 @@ namespace http
 				if (error_code == WSAETIMEDOUT)
 					logger::warning("Receive aborted in thread " + std::to_string(thread_id) + " due to timeout");
 				else
-					logger::error("Failed to received request in thread " + std::to_string(thread_id) + ". Error code: " + std::to_string(WSAGetLastError()));
+					logger::error("Failed to received request in thread " + std::to_string(thread_id) + ". Error code: " + std::to_string(error_code));
 			}
 			data += buffer;
 		}
@@ -149,7 +151,7 @@ namespace http
 				if (error_code == WSAETIMEDOUT)
 					logger::warning("Receive aborted in thread " + std::to_string(thread_id) + " due to timeout");
 				else
-					logger::error("Failed to received request in thread " + std::to_string(thread_id) + ". Error code: " + std::to_string(WSAGetLastError()));
+					logger::error("Failed to received request in thread " + std::to_string(thread_id) + ". Error code: " + std::to_string(error_code));
 				break;
 			}
 			data += buffer;

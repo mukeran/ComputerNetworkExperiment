@@ -35,7 +35,7 @@ class message_queue
 					}
 					func = std::move(mq_->queue_.front()); // get task
 					mq_->queue_.pop();
-					logger::debug("Worker" + std::to_string(id_) + "get a task.");
+					logger::debug("Worker " + std::to_string(id_) + " get a task.");
 				} // in order to make lock out of scope and release
 				
 				func();
@@ -70,6 +70,7 @@ public:
 		for (auto i = 0; i < size; ++i)
 		{
 			threads_[i] = std::thread(worker(this, i));
+			threads_[i].detach();
 			auto thread_id = threads_[i].get_id();
 			//logger::debug("create a new thread: " + i);
 		}
@@ -115,7 +116,7 @@ public:
 		return task_ptr->get_future();
 	}
 
-	std::future<bool> send_mail(mail mail, const smtp::auth& auth)
+	std::future<bool> send_mail(const mail& mail, const smtp::auth& auth)
 	{
 		logger::info("Mail " + mail.uuid + " is pushing into message queue");
 		return submit_func([mail, auth]()
