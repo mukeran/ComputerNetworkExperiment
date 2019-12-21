@@ -6,7 +6,17 @@ namespace smtp
 	{
 		::send(sock_, data.data(), data.length(), 0);
 		memset(buf_, 0, sizeof(char) * buffer_size);
-		recv(sock_, buf_, buffer_size, 0);
+		const auto size = recv(sock_, buf_, buffer_size, 0);
+		if (size <= 0)
+		{
+			const auto code = WSAGetLastError();
+			if (code == WSAETIMEDOUT) {
+				mail_->append_log("<timeout>");
+				throw std::exception("SMTP Waiting timeout!");
+			}
+			mail_->append_log("<error:" + std::to_string(code) + ">");
+			throw std::exception(("SMTP receive error. Error code: " + std::to_string(code)).data());
+		}
 		return buf_;
 	}
 	
@@ -23,6 +33,7 @@ namespace smtp
 			std::cout << WSAGetLastError() << std::endl;
 			throw std::exception("Connection failed");
 		}
+		setsockopt(this->sock_, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char*>(&recv_timeout), sizeof(int));
 		logger::info("Connection established");
 		this->buf_ = new char[buffer_size + 1];
 		this->mail_ = mail;
@@ -43,6 +54,8 @@ namespace smtp
 		logger::info("Sending EHLO command...");
 		mail_->append_log(send("EHLO ncat.xyz\r\n"));
 		logger::info("Received \"" + string(buf_) + "\" from server");
+		if (mail_->log.back().substr(0, 3) != "250")
+			throw std::exception("Server do not return 250");
 	}
 	
 	void session::auth() const
@@ -52,10 +65,16 @@ namespace smtp
 		const auto password = utils::base64_encode(auth_.password);
 		mail_->append_log(send("AUTH LOGIN\r\n"));
 		logger::info("Received \"" + string(buf_) + "\" from server");
+		if (mail_->log.back().substr(0, 3) != "334")
+			throw std::exception("Server do not return 334");
 		mail_->append_log(send(username + "\r\n"));
 		logger::info("Received \"" + string(buf_) + "\" from server");
+		if (mail_->log.back().substr(0, 3) != "334")
+			throw std::exception("Server do not return 334");
 		mail_->append_log(send(password + "\r\n"));
 		logger::info("Received \"" + string(buf_) + "\" from server");
+		if (mail_->log.back().substr(0, 3) != "235")
+			throw std::exception("Server do not return 235");
 	}
 	
 	void session::mail_from() const
@@ -63,13 +82,19 @@ namespace smtp
 		logger::info("Sending MAIL FROM command...");
 		mail_->append_log(send("MAIL FROM:" + mail_->from + "\r\n"));
 		logger::info("Received \"" + string(buf_) + "\" from server");
+		if (mail_->log.back().substr(0, 3) != "250")
+			throw std::exception("Server do not return 250");
 	}
 	
 	void session::rcpt_to() const
 	{
 		logger::info("Sending RCPT TO command...");
-		mail_->append_log(send("RCPT TO:" + mail_->to + "\r\n"));
-		logger::info("Received \"" + string(buf_) + "\" from server");
+		for (auto it = mail_->to.cbegin(); it != mail_->to.cend(); ++it) {
+			mail_->append_log(send("RCPT TO:" + *it + "\r\n"));
+			logger::info("Received \"" + string(buf_) + "\" from server");
+			if (mail_->log.back().substr(0, 3) != "250")
+				throw std::exception("Server do not return 250");
+		}
 	}
 	
 	void session::data() const
@@ -77,8 +102,12 @@ namespace smtp
 		logger::info("Sending DATA command and mail content...");
 		mail_->append_log(send("DATA\r\n"));
 		logger::info("Received \"" + string(buf_) + "\" from server");
+		if (mail_->log.back().substr(0, 3) != "354")
+			throw std::exception("Server do not return 354");
 		mail_->append_log(send(mail_->to_string()));
 		logger::info("Received \"" + string(buf_) + "\" from server");
+		if (mail_->log.back().substr(0, 3) != "250")
+			throw std::exception("Server do not return 250");
 	}
 	
 	void session::quit() const
@@ -86,5 +115,7 @@ namespace smtp
 		logger::info("Sending QUIT command...");
 		mail_->append_log(send("QUIT\r\n"));
 		logger::info("Received \"" + string(buf_) + "\" from server");
+		if (mail_->log.back().substr(0, 3) != "221")
+			throw std::exception("Server do not return 221");
 	}
 };

@@ -125,4 +125,33 @@ namespace utils
 			uuid += uuid_chars[rand() % 16];
 		return uuid;
 	}
+
+	string join(const vector<string>& vec, const char c)
+	{
+		string joined;
+		for (auto it = vec.cbegin(); it != vec.cend(); ++it)
+		{
+			if (it != vec.cbegin())
+				joined += c;
+			joined += *it;
+		}
+		return joined;
+	}
+
+	vector<string> split(string str, const char c)
+	{
+		vector<string> vec;
+		while (true)
+		{
+			const auto pos = str.find(c);
+			if (pos == string::npos)
+			{
+				vec.emplace_back(str);
+				break;
+			}
+			vec.emplace_back(str.substr(0, pos));
+			str = str.substr(pos + 1);
+		}
+		return vec;
+	}
 }

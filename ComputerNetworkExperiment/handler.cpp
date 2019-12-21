@@ -1,13 +1,4 @@
 #include "handler.h"
-#include "template_loader.h"
-#include "file_system.h"
-#include "message_queue.h"
-#include<string>
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <stdlib.h>
-#include <time.h>
 
 void handler::handle(const request& req, response* resp)
 {
@@ -16,6 +7,16 @@ void handler::handle(const request& req, response* resp)
 	const auto path = req.get_path();
 	const auto queries = req.get_queries();
 	const auto form_fields = req.get_form_fields();
+	auto status_to_string = [](const mail_status status) -> string
+	{
+		if (status == mail_status::pending)
+			return "Pending";
+		if (status == mail_status::sending)
+			return "Sending";
+		if (status == mail_status::failed)
+			return "Failed";
+		return "Success";
+	};
 	
 	if (path.empty() || path == "/")
 	{
@@ -30,8 +31,8 @@ void handler::handle(const request& req, response* resp)
 	}
 	else if (path == "/send" && method == "post")
 	{
-		string from = form_fields.at("from_name") + string("<") + form_fields.at("from_email") + string(">");
-		string to = form_fields.at("to_name") + string("<") + form_fields.at("to_email") + string(">");
+		const auto from = form_fields.at("from_name") + string("<") + form_fields.at("from_email") + string(">");
+		const auto to = utils::split(form_fields.at("to"), ';');
 		mail m(from, to, form_fields.at("subject"),form_fields.at("content"));
 		file_system::instance->save_mail(&m);
 		string username = form_fields.at("username");
@@ -59,7 +60,7 @@ void handler::handle(const request& req, response* resp)
 				auto created_time = get_time_string(m.created_time);
 				auto sent_time = get_time_string(m.sent_time);
 				list += R"(<tr><td>)";
-				list += html_escape_string(m.to);
+				list += html_escape_string(utils::join(m.to, ','));
 				list += R"(</td><td><a href="/detail/)";
 				list += m.uuid;
 				list += R"(">)";
@@ -68,11 +69,13 @@ void handler::handle(const request& req, response* resp)
 				list += created_time;
 				list += R"(</td><td>)";
 				list += sent_time;
+				list += R"(</td><td>)";
+				list += status_to_string(m.status);
 				list += R"(</td></tr>)";
 			}
 		}
 		map<string, string> M = { {replace,list} };
-		string msg = template_loader::render("list", M);
+		const auto msg = template_loader::render("list", M);
 		resp->set_body(msg);
 		resp->set_status(http::status_code::ok);
 	}
@@ -90,27 +93,26 @@ void handler::handle(const request& req, response* resp)
 			resp->set_status(http::status_code::not_found);
 			return;
 		}
-		vector<string> log = m.log;
 		string msg;
-		for (auto it = log.begin(); it != log.end(); ++it)
+		for (auto it = m.log.cbegin(); it != m.log.cend(); ++it)
 		{
 			msg += html_escape_string(*it);
 			msg += R"(</br>)";
 		}
-		string created_time = get_time_string(m.created_time);
-		string sent_time = get_time_string(m.sent_time);
-		auto status_to_string = [](const mail_status status) -> string
+		const auto created_time = get_time_string(m.created_time);
+		const auto sent_time = get_time_string(m.sent_time);
+		map<string, string> mp =
 		{
-			if (status == mail_status::pending)
-				return "Pending";
-			if (status == mail_status::sending)
-				return "Sending";
-			if (status == mail_status::failed)
-				return "Failed";
-			return "Success";
+			{"from", html_escape_string(m.from)},
+			{"to", html_escape_string(utils::join(m.to, ','))},
+			{"created_time", created_time},
+			{"sent_time", sent_time},
+			{"subject", html_escape_string(m.subject)},
+			{"content", html_escape_string(m.content)},
+			{"log", msg},
+			{"status", status_to_string(m.status)}
 		};
-		map<string, string> M = { {"from",html_escape_string(m.from)},{"to",html_escape_string(m.to)},{"created_time",created_time},{"sent_time",sent_time},{"subject",html_escape_string(m.subject)},{"content",html_escape_string(m.content)},{"log",msg}, {"status", status_to_string(m.status)} };
-		msg = template_loader::render("detail", M);
+		msg = template_loader::render("detail", mp);
 		resp->set_body(msg);
 		resp->set_status(http::status_code::ok);
 	}
@@ -141,14 +143,14 @@ string handler::html_escape_string(const string& data)
 {
 	std::string buffer;
 	buffer.reserve(data.size());
-	for (auto pos = 0u; pos < data.length(); ++pos) {
-		switch (data[pos]) {
+	for (auto &c : data) {
+		switch (c) {
 		case '&':  buffer.append("&amp;");       break;
 		case '\"': buffer.append("&quot;");      break;
 		case '\'': buffer.append("&apos;");      break;
 		case '<':  buffer.append("&lt;");        break;
 		case '>':  buffer.append("&gt;");        break;
-		default:   buffer.append(&data[pos], 1); break;
+		default:   buffer.append(&c, 1); break;
 		}
 	}
 	return buffer;

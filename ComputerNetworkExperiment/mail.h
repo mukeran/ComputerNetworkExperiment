@@ -24,10 +24,10 @@ class mail
 public:
 	mail();
 	mail(const string& uuid, const kv& fields);
-	mail(const string& from, const string& to, const string& subject, const string& content);
+	mail(const string& from, const vector<string>& to, const string& subject, const string& content);
 	string uuid;
 	string from;
-	string to;
+	vector<string> to;
 	string subject;
 	string content;
 	mail_status status;
@@ -37,4 +37,6 @@ public:
 	string to_string() const;
 	kv get_kv() const;
 	void append_log(const string& line);
+	static string serialize(const vector<string>& vec);
+	static void unserialize(const string& str, vector<string>& vec);
 };
