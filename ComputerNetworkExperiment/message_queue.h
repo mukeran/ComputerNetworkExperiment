@@ -10,48 +10,6 @@
 #include <functional>
 #include "smtp/client.h"
 
-template <typename T>
-class lock_queue
-{
-	std::queue<T> queue_;
-	std::mutex m_;
-public:
-	lock_queue() = default;
-	~lock_queue() = default;
-	
-	bool empty()
-	{
-		std::unique_lock<std::mutex> lock(m_);
-		return queue_.empty();
-	}
-
-	int size()
-	{
-		std::unique_lock<std::mutex> lock(m_);
-		return queue_.size();
-	}
-		
-	void enqueue(T& t)
-	{
-		std::unique_lock<std::mutex> lock(m_);
-		queue_.push(t);
-	}
-
-	bool dequeue(T& t)
-	{
-		std::unique_lock<std::mutex> lock(m_);
-		if (queue_.empty())
-		{
-			return false;
-		}
-		t = std::move(queue_.front());
-		queue_.pop();
-		return true;
-	}
-
-};
-
-
 class message_queue
 {
 	class worker
@@ -62,34 +20,34 @@ class message_queue
 		worker(message_queue* mq, const int id) : id_(id), mq_(mq) {}
 		void operator()() const
 		{
-			logger::debug("Worker " + std::to_string(id_) + " created!");
 			std::function<void()> func;
-			while (!mq_->shutdown_)
+			while (true)
 			{
-				std::unique_lock<std::mutex> lock(mq_->conditional_mutex_);
-
-				while (mq_->queue_.empty())
 				{
+					std::unique_lock<std::mutex> lock(mq_->queue_mutex_);
 					//logger::debug("Worker" + std::to_string(id_) + " get to sleep");
-					mq_->cv_.wait(lock);// The wait operations atomically release the mutex and suspend the execution of the thread.
+					mq_->cv_.wait(lock, [this] { return mq_->shutdown_ || !mq_->queue_.empty(); });// The wait operations atomically release the mutex and suspend the execution of the thread.
 					// the mutex is atomically reacquired.
 					//logger::debug("Worker" + std::to_string(id_) + " waked");
-				}
-				logger::debug("Worker" + std::to_string(id_) + "get a task.");
-				const auto dequeued = mq_->queue_.dequeue(func); // get task
-				if (dequeued)
-				{
-					func();
-				}
+					if (mq_->shutdown_ && mq_->queue_.empty())
+					{
+						return;
+					}
+					func = std::move(mq_->queue_.front()); // get task
+					mq_->queue_.pop();
+					logger::debug("Worker" + std::to_string(id_) + "get a task.");
+				} // in order to make lock out of scope and release
+				
+				func();
 				//logger::debug("Worker" + std::to_string(id_) + " finished task");
 			}
 		}
 	};
 
 	bool shutdown_;
-	lock_queue<std::function<void()>> queue_;
+	std::queue< std::function<void()> > queue_;
 	std::vector<std::thread> threads_;
-	std::mutex conditional_mutex_;
+	std::mutex queue_mutex_;
 	std::condition_variable cv_;
 public:
 	static message_queue* instance;
@@ -120,7 +78,10 @@ public:
 	// Waits until threads finish their current task and shutdowns the pool
 	void shutdown()
 	{
-		shutdown_ = true;
+		{
+			std::unique_lock<std::mutex> lock(queue_mutex_);
+			shutdown_ = true;
+		}
 		cv_.notify_all();
 
 		const int size = threads_.size();
@@ -143,8 +104,13 @@ public:
 		{
 			(*task_ptr)();
 		};
-		queue_.enqueue(wrapper_func);
-		std::lock_guard<std::mutex> lock(instance->conditional_mutex_);
+		{
+			std::unique_lock<std::mutex> lock(queue_mutex_);
+			if (shutdown_)
+				throw std::runtime_error("enqueue on stop");
+			queue_.emplace(wrapper_func);
+		}
+		logger::info("Mail pushed !!");
 		cv_.notify_one();
 		return task_ptr->get_future();
 	}
@@ -154,6 +120,7 @@ public:
 		logger::info("Mail " + mail.uuid + " is pushing into message queue");
 		return submit_func([mail, auth]()
 		{
+			std::this_thread::sleep_for(std::chrono::seconds(5));
 			auto m = mail;
 			return smtp::client::instance->send(&m, auth);
 		});
