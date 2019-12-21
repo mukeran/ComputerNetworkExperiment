@@ -16,8 +16,8 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav">
-                <a class="nav-item nav-link" href="/list">List</a>
-                <a class="nav-item nav-link active" href="/send">Send</a>
+                    <a class="nav-item nav-link" href="/list">List</a>
+                    <a class="nav-item nav-link active" href="/send">Send</a>
                 </div>
             </div>
         </nav>
@@ -25,18 +25,24 @@
         <h1> Send a Mail</h1>
         <div class="row">
             <div class="col">
+                <div class="alert alert-warning alert-dismissible fade show" role="alert" style="display: none;" id="alerter">
+                    name shouldn't contain semicolon.
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
                 <form method="POST" id="form">
                     <div class="form-group">
                         <label for="auth">Auth :</label>
                         <div class="input-group">
                             <input required placeholder="Username" name="username" type="text" class="form-control">
-                            <input required placeholder="Password" name="password" type="password" class="form-control" id="auth">        
+                            <input required placeholder="Password" name="password" type="password" class="form-control" id="auth">
                         </div>
                         <label for="sender">From :</label>
                         <div class="input-group">
                             <input type="hidden" name="to" id="to">
-                            <input required placeholder="Name" name="from_name" type="text" class="col-3 form-control">
-                            <input required placeholder="Email" name="from_email" type="email" class="form-control" id="sender">        
+                            <input required placeholder="Name" name="from_name" id="from_name" type="text" class="col-3 form-control">
+                            <input required placeholder="Email" name="from_email" type="email" class="form-control" id="sender">
                         </div>
                         <label for="receiver">To :</label>
                         <div class="input-group receiver-control" id="receiver">
@@ -47,7 +53,7 @@
                                 <button class="btn btn-outline-secondary" type="button" id="add_receiver" onclick="add_input()">+</button>
                             </div>
                         </div>
-                        
+
                         <label for="subject">Subject :</label>
                         <input required name="subject" type="text" class="form-control" id="subject">
                         <label for="content">Content :</label>
@@ -58,39 +64,47 @@
             </div>
         </div>
         <div class="col">
-            
+
         </div>
     </div>
-</body>
-<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
-<script>
-    function add_input() {
-        receiver_inputs = '<div class="input-group receiver-control">\
-                            <input placeholder="Name" type="text" class="col-3 form-control">\
-                            <input placeholder="Email" type="email" class="form-control">\
-                            <div class="input-group-append">\
-                                <button class="btn btn-outline-secondary" type="button" onclick="delete_input(this)">-</button>\
-                            </div>\
-                        </div>'
-        $('#receiver').after(receiver_inputs)
-    }
-    function delete_input(that) {
-        // console.log(that)
-        $(that).parent().parent().remove()
-    }
-    $('#form').submit(function () {
-        s = ''
-        divs = $('.receiver-control')
-        for(i=0;i<divs.length;i++)
-        {
-            inps = $(divs[i]).find('.form-control')
-            // console.log(inps)
-            s += inps[0].value + ' <'
-            s += inps[1].value + '>;'
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script>
+        function add_input() {
+            receiver_inputs = '<div class="input-group receiver-control">\
+            <input placeholder="Name" type="text" class="col-3 form-control">\
+            <input placeholder="Email" type="email" class="form-control">\
+            <div class="input-group-append">\
+            <button class="btn btn-outline-secondary" type="button" onclick="delete_input(this)">-</button>\
+            </div>\
+            </div>'
+            $('#receiver').after(receiver_inputs)
         }
-        $('#to').val(s);
-        // console.log(s)
-        return true
-    })
-</script>
+        function delete_input(that) {
+            // console.log(that)
+            $(that).parent().parent().remove()
+        }
+        
+        function show(){
+            $('#alerter').css('display', '')
+        }
+        $('#form').submit(function () {
+            if (document.getElementById("from_name").value.indexOf(';') !== -1) show(); return false
+            s = ''
+            divs = $('.receiver-control')
+            for(i=0;i<divs.length;i++)
+            {
+                inps = $(divs[i]).find('.form-control')
+                // console.log(inps)
+                if (inps[0].value.indexOf(';') !== -1) show(); return false
+                if (inps[0].value.indexOf(';') !== -1) show(); return false
+                s += inps[0].value + ' <'
+                s += inps[1].value + '>;'
+            }
+            $('#to').val(s);
+            // console.log(s)
+            return true
+        })
+    </script>
+</body>
 </html>
