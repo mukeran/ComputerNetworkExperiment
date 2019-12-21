@@ -1,5 +1,13 @@
 ﻿#include "session.h"
 
+#define CHECK_STATUS(code, want) \
+	if ((code) != (want))\
+	{\
+		mail_->append_log("Error: " + (code) + " " + status_string.at(code));\
+		throw std::exception(("Server do not return " + (code)).data());\
+	}
+
+
 namespace smtp
 {
 	string session::send(const string& data) const
@@ -54,8 +62,7 @@ namespace smtp
 		logger::info("Sending EHLO command...");
 		mail_->append_log(send("EHLO ncat.xyz\r\n"));
 		logger::info("Received \"" + string(buf_) + "\" from server");
-		if (mail_->log.back().substr(0, 3) != "250")
-			throw std::exception("Server do not return 250");
+		CHECK_STATUS(mail_->log.back().substr(0, 3), "250");
 	}
 	
 	void session::auth() const
@@ -65,16 +72,13 @@ namespace smtp
 		const auto password = utils::base64_encode(auth_.password);
 		mail_->append_log(send("AUTH LOGIN\r\n"));
 		logger::info("Received \"" + string(buf_) + "\" from server");
-		if (mail_->log.back().substr(0, 3) != "334")
-			throw std::exception("Server do not return 334");
+		CHECK_STATUS(mail_->log.back().substr(0, 3), "334");
 		mail_->append_log(send(username + "\r\n"));
 		logger::info("Received \"" + string(buf_) + "\" from server");
-		if (mail_->log.back().substr(0, 3) != "334")
-			throw std::exception("Server do not return 334");
+		CHECK_STATUS(mail_->log.back().substr(0, 3), "334");
 		mail_->append_log(send(password + "\r\n"));
 		logger::info("Received \"" + string(buf_) + "\" from server");
-		if (mail_->log.back().substr(0, 3) != "235")
-			throw std::exception("Server do not return 235");
+		CHECK_STATUS(mail_->log.back().substr(0, 3), "235");
 	}
 	
 	void session::mail_from() const
@@ -82,8 +86,7 @@ namespace smtp
 		logger::info("Sending MAIL FROM command...");
 		mail_->append_log(send("MAIL FROM:" + mail_->from + "\r\n"));
 		logger::info("Received \"" + string(buf_) + "\" from server");
-		if (mail_->log.back().substr(0, 3) != "250")
-			throw std::exception("Server do not return 250");
+		CHECK_STATUS(mail_->log.back().substr(0, 3), "250");
 	}
 	
 	void session::rcpt_to() const
@@ -92,8 +95,7 @@ namespace smtp
 		for (auto it = mail_->to.cbegin(); it != mail_->to.cend(); ++it) {
 			mail_->append_log(send("RCPT TO:" + *it + "\r\n"));
 			logger::info("Received \"" + string(buf_) + "\" from server");
-			if (mail_->log.back().substr(0, 3) != "250")
-				throw std::exception("Server do not return 250");
+			CHECK_STATUS(mail_->log.back().substr(0, 3), "250");
 		}
 	}
 	
@@ -102,12 +104,10 @@ namespace smtp
 		logger::info("Sending DATA command and mail content...");
 		mail_->append_log(send("DATA\r\n"));
 		logger::info("Received \"" + string(buf_) + "\" from server");
-		if (mail_->log.back().substr(0, 3) != "354")
-			throw std::exception("Server do not return 354");
+		CHECK_STATUS(mail_->log.back().substr(0, 3), "354");
 		mail_->append_log(send(mail_->to_string()));
 		logger::info("Received \"" + string(buf_) + "\" from server");
-		if (mail_->log.back().substr(0, 3) != "250")
-			throw std::exception("Server do not return 250");
+		CHECK_STATUS(mail_->log.back().substr(0, 3), "250");
 	}
 	
 	void session::quit() const
@@ -115,7 +115,6 @@ namespace smtp
 		logger::info("Sending QUIT command...");
 		mail_->append_log(send("QUIT\r\n"));
 		logger::info("Received \"" + string(buf_) + "\" from server");
-		if (mail_->log.back().substr(0, 3) != "221")
-			throw std::exception("Server do not return 221");
+		CHECK_STATUS(mail_->log.back().substr(0, 3), "221");
 	}
 };

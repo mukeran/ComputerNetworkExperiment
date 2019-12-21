@@ -40,7 +40,6 @@
                         </div>
                         <label for="sender">From :</label>
                         <div class="input-group">
-                            <input type="hidden" name="to" id="to">
                             <input required placeholder="Name" name="from_name" id="from_name" type="text" class="col-3 form-control">
                             <input required placeholder="Email" name="from_email" type="email" class="form-control" id="sender">
                         </div>
@@ -89,17 +88,28 @@
             $('#alerter').css('display', '')
         }
         $('#form').submit(function () {
-            if (document.getElementById("from_name").value.indexOf(';') !== -1) show(); return false
+            if (document.getElementById("from_name").value.indexOf(';') !== -1) {
+                show();
+                return false
+            }
             s = ''
             divs = $('.receiver-control')
             for(i=0;i<divs.length;i++)
             {
                 inps = $(divs[i]).find('.form-control')
                 // console.log(inps)
-                if (inps[0].value.indexOf(';') !== -1) show(); return false
-                if (inps[0].value.indexOf(';') !== -1) show(); return false
-                s += inps[0].value + ' <'
-                s += inps[1].value + '>;'
+                if (inps[0].value.indexOf(';') !== -1) {
+                    show()
+                    return false
+                }
+                if (inps[0].value.indexOf(';') !== -1) {
+                    show()
+                    return false
+                }
+                s += inps[0].value + '<'
+                s += inps[1].value + '>'
+                if (i != divs.length - 1)
+                    s += ';'
             }
             $('#to').val(s);
             // console.log(s)
