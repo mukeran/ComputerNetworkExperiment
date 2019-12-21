@@ -9,6 +9,7 @@
 namespace smtp
 {
 	constexpr auto buffer_size = 1024;
+	constexpr auto recv_timeout = 5000;
 	
 	class session
 	{

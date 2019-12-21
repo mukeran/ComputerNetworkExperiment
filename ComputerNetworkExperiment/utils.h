@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
+#include <vector>
 using std::string;
+using std::vector;
 
 namespace utils
 {
@@ -13,4 +15,6 @@ namespace utils
 	string base64_decode(const string& encoded_string);
 	bool is_uuid(const string& str);
 	string random_uuid();
+	string join(const vector<string>& vec, const char c);
+	vector<string> split(string str, const char c);
 }
